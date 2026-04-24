@@ -19,7 +19,10 @@ const QUESTIONS_PER_SESSION = 10;
 const TIMER_SECONDS = 30;
 
 export default function QuizScreen({ navigation, route }) {
-  const { categorie = null, mode = 'entrainement' } = route.params ?? {};
+  // ChoixModeScreen passe un objet mode complet {id, categorie?, ...}
+  const rawMode   = route.params?.mode ?? {};
+  const modeId    = typeof rawMode === 'string' ? rawMode : (rawMode.id ?? 'libre');
+  const categorie = route.params?.categorie ?? rawMode.categorie ?? null;
 
   // ─── State ────────────────────────────────────────────────────────────────────
   const [questions] = useState(() =>
@@ -120,7 +123,7 @@ export default function QuizScreen({ navigation, route }) {
         score,
         total: questions.length,
         details,
-        mode,
+        mode: modeId,
         categorie,
       });
       return;

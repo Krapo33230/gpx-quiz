@@ -404,7 +404,7 @@ export const QUESTIONS = [
       'L\'ordonnance du 2 novembre 1945',
     ],
     correctIndex: 1,
-    explication: 'La loi du 14 avril 2011 (suite à la jurisprudence CEDH) a instauré la présence de l\'avocat dès le début de la GAV et lors des auditions.',
+    explication: 'La loi du 14 avril 2011 (suite aux arrêts CEDH Salduz) a consacré le droit à un entretien de 30 min avec un avocat dès le début de la GAV. La loi du 3 juin 2016 a ensuite étendu ce droit à l\'assistance complète lors des auditions.',
   },
   {
     id: 'D016',
@@ -783,7 +783,7 @@ export const QUESTIONS = [
       'La gestion des frontières',
     ],
     correctIndex: 1,
-    explication: 'La DGSI (Direction Générale de la Sécurité Intérieure, ex-DCRI) est le service de renseignement intérieur chargé de la contre-espionnage, contre-terrorisme et cybermenaces.',
+    explication: 'La DGSI (créée en 2014, en remplacement de la DCRI) est le service de renseignement intérieur autonome, rattaché au Ministère de l\'Intérieur. Elle est chargée du contre-espionnage, contre-terrorisme et de la cybersécurité.',
   },
   {
     id: 'S008',
@@ -791,12 +791,12 @@ export const QUESTIONS = [
     enonce: 'Quelle est la différence entre la Police nationale et la Gendarmerie nationale ?',
     options: [
       'Aucune différence, ce sont les mêmes forces',
-      'La Police est civile (Ministère de l\'Intérieur), la Gendarmerie est militaire (rattachée aussi à l\'Intérieur mais à statut militaire)',
+      'La Police est civile (Ministère de l\'Intérieur), la Gendarmerie est une force militaire placée sous l\'autorité du Ministère de l\'Intérieur depuis 2009',
       'La Gendarmerie s\'occupe uniquement des crimes, la Police des délits',
       'La Police est nationale, la Gendarmerie est locale',
     ],
     correctIndex: 1,
-    explication: 'La Police nationale est une force civile. La Gendarmerie est une force militaire (relevant du MINDEF pour le statut) compétente principalement en zones rurales et périurbaines.',
+    explication: 'La Police nationale est une force civile. La Gendarmerie est une force militaire placée sous l\'autorité du Ministère de l\'Intérieur depuis 2009 (loi du 3 août 2009), tout en conservant son statut militaire. Elle est compétente principalement en zones rurales et périurbaines.',
   },
   {
     id: 'S009',

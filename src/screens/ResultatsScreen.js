@@ -60,9 +60,10 @@ export default function ResultatsScreen({ navigation, route }) {
   );
 
   async function _persistSession({ score, total, details, mode }) {
+    const modeId = typeof mode === 'object' ? (mode?.id ?? 'libre') : (mode ?? 'libre');
     const [dailyTotal] = await Promise.all([
       addDailyCount(total),
-      saveScore({ score, total, mode: mode ?? 'libre' }),
+      saveScore({ score, total, mode: modeId }),
       updateStreak(),
       details?.length ? updateProgressionMatiere(details) : Promise.resolve(),
     ]);
@@ -248,8 +249,10 @@ function GaugeBar({ value }) {
 
 // ─── HistoryRow ───────────────────────────────────────────────────────────────
 function HistoryRow({ session, index }) {
-  const pct   = Math.round((session.score / session.total) * 100);
-  const info  = MODE_LABELS[session.mode] ?? { label: session.mode, color: COLORS.primary };
+  const pct     = Math.round((session.score / session.total) * 100);
+  // Garde : mode peut être un objet (ancienne donnée) ou une string
+  const modeKey = typeof session.mode === 'object' ? (session.mode?.id ?? 'libre') : session.mode;
+  const info    = MODE_LABELS[modeKey] ?? { label: modeKey ?? 'Quiz', color: COLORS.primary };
   const date  = new Date(session.date).toLocaleDateString('fr-FR', {
     day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
   });

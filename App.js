@@ -108,15 +108,14 @@ export default function App() {
             component={ResultatsScreen}
           />
 
-          {/* ── 6. Paywall (modale transparente) ────────────────── */}
+          {/* ── 6. Paywall (modale bottom-sheet) ───────────────── */}
           <Stack.Screen
             name="Paywall"
             component={PaywallScreen}
             options={{
               headerShown: false,
-              presentation: 'transparentModal',
               cardStyle: { backgroundColor: 'transparent' },
-              cardOverlayEnabled: true,
+              cardOverlayEnabled: false,
               gestureEnabled: true,
               gestureDirection: 'vertical',
               cardStyleInterpolator: ({ current }) => ({
@@ -125,12 +124,11 @@ export default function App() {
                     {
                       translateY: current.progress.interpolate({
                         inputRange:  [0, 1],
-                        outputRange: [700, 0],
+                        outputRange: [900, 0],
                       }),
                     },
                   ],
                 },
-                overlayStyle: { opacity: 0 }, // géré en interne par PaywallScreen
               }),
             }}
           />

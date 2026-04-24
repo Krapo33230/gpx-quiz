@@ -16,7 +16,7 @@ import { StatCard } from '../components/ui';
 import {
   getScores, getStats, clearAll,
   saveScore, updateStreak, updateProgressionMatiere, getStreak,
-  addDailyCount,
+  addDailyCount, addXP, calcXP, getXP, getLevelInfo, saveDailyScore, getWeeklyScores,
 } from '../utils/storage';
 
 const DAILY_LIMIT = 30;
@@ -42,7 +42,10 @@ export default function ResultatsScreen({ navigation, route }) {
     totalQuestions: 0,
     bestScore: 0,
   });
-  const [streak, setStreak] = useState(0);
+  const [streak,       setStreak]      = useState(0);
+  const [bestStreak,   setBestStreak]  = useState(0);
+  const [xpInfo,       setXpInfo]      = useState(null);
+  const [weeklyScores, setWeeklyScores] = useState([]);
 
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
@@ -60,25 +63,49 @@ export default function ResultatsScreen({ navigation, route }) {
   );
 
   async function _persistSession({ score, total, details, mode }) {
-    const modeId = typeof mode === 'object' ? (mode?.id ?? 'libre') : (mode ?? 'libre');
+    const modeId   = typeof mode === 'object' ? (mode?.id ?? 'libre') : (mode ?? 'libre');
+    const pct      = total > 0 ? Math.round((score / total) * 100) : 0;
+    const xpGained = calcXP(score, total);
+
+    // Niveau avant la session
+    const xpBefore    = await getXP();
+    const levelBefore = getLevelInfo(xpBefore).level;
+
     const [dailyTotal] = await Promise.all([
       addDailyCount(total),
       saveScore({ score, total, mode: modeId }),
       updateStreak(),
       details?.length ? updateProgressionMatiere(details) : Promise.resolve(),
+      addXP(xpGained),
+      saveDailyScore(pct),
     ]);
+
+    const xpAfter    = await getXP();
+    const levelAfter = getLevelInfo(xpAfter).level;
+
     loadData();
-    if (dailyTotal > DAILY_LIMIT) {
-      // Léger délai pour laisser l'écran s'afficher avant la modale
+
+    if (levelAfter.name !== levelBefore.name) {
+      setTimeout(() => navigation.navigate('LevelUp', {
+        newLevel: levelAfter,
+        xpGained,
+        totalXP: xpAfter,
+      }), 500);
+    } else if (dailyTotal > DAILY_LIMIT) {
       setTimeout(() => navigation.navigate('Paywall'), 600);
     }
   }
 
   async function loadData() {
-    const [s, sc, sk] = await Promise.all([getStats(), getScores(), getStreak()]);
+    const [s, sc, sk, xp, weekly] = await Promise.all([
+      getStats(), getScores(), getStreak(), getXP(), getWeeklyScores(),
+    ]);
     setStats(s);
     setScores(sc);
     setStreak(sk.currentStreak);
+    setBestStreak(sk.bestStreak ?? sk.currentStreak);
+    setXpInfo(getLevelInfo(xp));
+    setWeeklyScores(weekly);
 
     Animated.parallel([
       Animated.timing(fadeAnim,  { toValue: 1, duration: 400, useNativeDriver: true }),
@@ -153,6 +180,72 @@ export default function ResultatsScreen({ navigation, route }) {
                 <StatCard icon="⭐" value={stats.bestScore}      label="Meilleur score" />
               </View>
             </Animated.View>
+
+            {/* ── Streak + Best streak ── */}
+            {xpInfo && (
+              <Animated.View
+                style={[
+                  styles.streakRow,
+                  { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+                ]}
+              >
+                <View style={styles.streakBox}>
+                  <Text style={styles.streakNum}>{streak}</Text>
+                  <Text style={styles.streakLbl}>jours de suite</Text>
+                </View>
+                <View style={[styles.streakBox, styles.streakBoxAlt]}>
+                  <Text style={styles.streakNumAlt}>{bestStreak}</Text>
+                  <Text style={styles.streakLblAlt}>meilleur record</Text>
+                </View>
+              </Animated.View>
+            )}
+
+            {/* ── XP & Niveau ── */}
+            {xpInfo && (
+              <Animated.View
+                style={[
+                  styles.xpCard,
+                  SHADOWS.card,
+                  { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+                ]}
+              >
+                <TouchableOpacity onPress={() => navigation.navigate('Niveaux')} style={styles.xpSeeAll}>
+                  <Text style={styles.xpSeeAllText}>Voir tous les grades →</Text>
+                </TouchableOpacity>
+                <View style={styles.xpHeader}>
+                  <Text style={styles.xpEmoji}>{xpInfo.level.emoji}</Text>
+                  <View style={styles.xpInfoCol}>
+                    <Text style={[styles.xpLevelName, { color: xpInfo.level.color }]}>
+                      {xpInfo.level.name}
+                    </Text>
+                    <Text style={styles.xpTotal}>{xpInfo.xp} XP</Text>
+                  </View>
+                  {xpInfo.next && (
+                    <Text style={styles.xpNext}>→ {xpInfo.next.name} à {xpInfo.next.min} XP</Text>
+                  )}
+                </View>
+                {xpInfo.next && (
+                  <View style={styles.xpTrack}>
+                    <XPBar pct={xpInfo.pct} color={xpInfo.level.color} />
+                    <Text style={styles.xpPct}>{xpInfo.pct}%</Text>
+                  </View>
+                )}
+              </Animated.View>
+            )}
+
+            {/* ── Graphe hebdomadaire ── */}
+            {weeklyScores.length > 0 && (
+              <Animated.View
+                style={[
+                  styles.weekCard,
+                  SHADOWS.card,
+                  { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+                ]}
+              >
+                <Text style={styles.weekTitle}>Ta progression (7 jours)</Text>
+                <WeeklyChart data={weeklyScores} />
+              </Animated.View>
+            )}
 
             {/* ── Jauge de progression ── */}
             <Animated.View
@@ -243,6 +336,56 @@ function GaugeBar({ value }) {
           },
         ]}
       />
+    </View>
+  );
+}
+
+// ─── XPBar ───────────────────────────────────────────────────────────────────
+function XPBar({ pct, color }) {
+  const anim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(anim, { toValue: pct / 100, duration: 900, useNativeDriver: false }).start();
+  }, [pct]);
+  return (
+    <View style={styles.xpBarTrack}>
+      <Animated.View
+        style={[
+          styles.xpBarFill,
+          { backgroundColor: color, width: anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) },
+        ]}
+      />
+    </View>
+  );
+}
+
+// ─── WeeklyChart ─────────────────────────────────────────────────────────────
+function WeeklyChart({ data }) {
+  const maxPct = Math.max(...data.map(d => d.pct ?? 0), 1);
+  return (
+    <View style={styles.weekChart}>
+      {data.map((item, i) => {
+        const height = item.pct !== null ? Math.max((item.pct / 100) * 100, 8) : 0;
+        const color  = item.pct === null ? 'transparent'
+          : item.pct >= 75 ? COLORS.success
+          : item.pct >= 50 ? COLORS.warning
+          : COLORS.danger;
+        return (
+          <View key={i} style={styles.weekCol}>
+            {item.pct !== null && (
+              <View style={[styles.weekTooltip, item.isToday && styles.weekTooltipActive]}>
+                <Text style={[styles.weekTooltipText, item.isToday && { color: COLORS.primary }]}>
+                  {item.pct}%
+                </Text>
+              </View>
+            )}
+            <View style={styles.weekBarWrap}>
+              <View style={[styles.weekBar, { height, backgroundColor: color, opacity: item.isToday ? 1 : 0.6 }]} />
+            </View>
+            <Text style={[styles.weekDay, item.isToday && styles.weekDayActive]}>{item.day}</Text>
+            <Text style={styles.weekDate}>{item.date}</Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -347,6 +490,64 @@ const styles = StyleSheet.create({
   gaugeLabel:  { ...FONTS.xs, color: COLORS.textDisabled },
   gaugePct:    { ...FONTS.h3, fontWeight: '900' },
   concoursTip: { ...FONTS.sm, color: COLORS.textSecondary, marginTop: SPACING.sm, textAlign: 'center' },
+
+  // Streak row
+  streakRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginBottom: SPACING.md,
+  },
+  streakBox: {
+    flex: 1,
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    alignItems: 'center',
+  },
+  streakBoxAlt: { backgroundColor: COLORS.surface, borderWidth: 1.5, borderColor: COLORS.border },
+  streakNum: { ...FONTS.h1, color: COLORS.white },
+  streakNumAlt: { ...FONTS.h1, color: COLORS.primary },
+  streakLbl: { ...FONTS.xs, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
+  streakLblAlt: { ...FONTS.xs, color: COLORS.textSecondary, marginTop: 2 },
+
+  // XP card
+  xpCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  xpHeader:    { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm },
+  xpEmoji:     { fontSize: 36 },
+  xpInfoCol:   { flex: 1 },
+  xpLevelName: { ...FONTS.h3, fontWeight: '800' },
+  xpTotal:     { ...FONTS.sm, color: COLORS.textSecondary },
+  xpNext:      { ...FONTS.xs, color: COLORS.textDisabled, textAlign: 'right', flex: 1 },
+  xpTrack:     { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  xpBarTrack:  { flex: 1, height: 10, borderRadius: RADIUS.pill, backgroundColor: COLORS.border, overflow: 'hidden' },
+  xpBarFill:   { height: '100%', borderRadius: RADIUS.pill },
+  xpPct:       { ...FONTS.xs, color: COLORS.textSecondary, width: 36, textAlign: 'right' },
+  xpSeeAll:    { alignSelf: 'flex-end', marginBottom: SPACING.sm },
+  xpSeeAllText: { ...FONTS.xs, color: COLORS.primary, fontWeight: '700' },
+
+  // Weekly chart
+  weekCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+  },
+  weekTitle: { ...FONTS.h3, color: COLORS.text, marginBottom: SPACING.md },
+  weekChart: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' },
+  weekCol:   { flex: 1, alignItems: 'center' },
+  weekBarWrap: { height: 100, justifyContent: 'flex-end', width: '70%' },
+  weekBar:   { width: '100%', borderRadius: RADIUS.sm },
+  weekDay:   { ...FONTS.xs, color: COLORS.textSecondary, marginTop: 4 },
+  weekDayActive: { color: COLORS.primary, fontWeight: '800' },
+  weekDate:  { ...FONTS.xs, color: COLORS.textDisabled },
+  weekTooltip: { backgroundColor: COLORS.border, borderRadius: RADIUS.sm, paddingHorizontal: 4, paddingVertical: 2, marginBottom: 2 },
+  weekTooltipActive: { backgroundColor: COLORS.primary + '20' },
+  weekTooltipText: { ...FONTS.xs, color: COLORS.textSecondary },
 
   histRow: {
     flexDirection: 'row',

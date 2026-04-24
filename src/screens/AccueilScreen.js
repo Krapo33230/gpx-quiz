@@ -6,11 +6,12 @@ import {
   Animated,
   ScrollView,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { PrimaryButton, OutlineButton, StatCard } from '../components/ui';
-import { getStats, getStreak, getProgressionMatiere } from '../utils/storage';
+import { getStats, getStreak, getProgressionMatiere, getXP, getLevelInfo } from '../utils/storage';
 import { CATEGORIES } from '../data/questions';
 
 // Ordre d'affichage des matières
@@ -22,20 +23,23 @@ export default function AccueilScreen({ navigation }) {
   });
   const [streak,      setStreak]      = useState(0);
   const [progression, setProgression] = useState({});
+  const [xpInfo,      setXpInfo]      = useState(null);
 
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
   const logoScale = useRef(new Animated.Value(0.6)).current;
 
   async function loadAll() {
-    const [s, sk, prog] = await Promise.all([
+    const [s, sk, prog, xp] = await Promise.all([
       getStats(),
       getStreak(),
       getProgressionMatiere(),
+      getXP(),
     ]);
     setStats(s);
     setStreak(sk.currentStreak);
     setProgression(prog);
+    setXpInfo(getLevelInfo(xp));
   }
 
   useEffect(() => {
@@ -72,6 +76,16 @@ export default function AccueilScreen({ navigation }) {
             </View>
             {streak > 0 && <StreakBadge streak={streak} />}
           </View>
+          {xpInfo && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Niveaux')}
+              style={styles.rankBadge}
+            >
+              <Text style={styles.rankEmoji}>{xpInfo.level.emoji}</Text>
+              <Text style={[styles.rankName, { color: xpInfo.level.color }]}>{xpInfo.level.name}</Text>
+              <Text style={styles.rankXP}>{xpInfo.xp} XP</Text>
+            </TouchableOpacity>
+          )}
           <Text style={styles.appName}>GardienQuiz</Text>
           <Text style={styles.subtitle}>Concours Gardien de la Paix</Text>
           <Text style={styles.subtitle2}>Police Nationale</Text>
@@ -97,11 +111,15 @@ export default function AccueilScreen({ navigation }) {
             onPress={() => navigation.navigate('ChoixMode')}
             style={styles.mainBtn}
           />
+          <OutlineButton
+            label="🎯  Faire mon auto-évaluation"
+            onPress={() => navigation.navigate('AutoEval')}
+            style={styles.secondBtn}
+          />
           {stats.sessions > 0 && (
             <OutlineButton
               label="📊  Voir mes résultats"
               onPress={() => navigation.navigate('Resultats')}
-              style={styles.secondBtn}
             />
           )}
         </Animated.View>
@@ -285,6 +303,22 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: RADIUS.pill,
   },
+
+  rankBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.pill,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginTop: SPACING.sm,
+  },
+  rankEmoji: { fontSize: 18 },
+  rankName:  { ...FONTS.sm, fontWeight: '800' },
+  rankXP:    { ...FONTS.xs, color: COLORS.textDisabled },
 
   footer: {
     ...FONTS.sm,

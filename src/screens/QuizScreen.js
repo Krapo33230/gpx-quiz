@@ -15,7 +15,7 @@ import { ProgressBar, CategoryBadge } from '../components/ui';
 import { CATEGORIES, getRandomQuestions } from '../data/questions';
 import { recordAnswer } from '../utils/storage';
 
-const QUESTIONS_PER_SESSION = 10;
+const MODE_COUNT = { flash: 5, complet: 20 };
 const TIMER_SECONDS = 30;
 
 export default function QuizScreen({ navigation, route }) {
@@ -26,7 +26,7 @@ export default function QuizScreen({ navigation, route }) {
 
   // ─── State ────────────────────────────────────────────────────────────────────
   const [questions] = useState(() =>
-    getRandomQuestions(QUESTIONS_PER_SESSION, categorie),
+    getRandomQuestions(MODE_COUNT[modeId] ?? 10, categorie),
   );
   const [index,    setIndex]    = useState(0);
   const [selected, setSelected] = useState(null);

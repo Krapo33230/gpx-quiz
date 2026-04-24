@@ -15,6 +15,8 @@
 
 import 'react-native-gesture-handler';            // ← doit être la 1ère importation
 import React from 'react';
+import { Dimensions } from 'react-native';
+const { height } = Dimensions.get('window');
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { StatusBar } from 'expo-status-bar';
@@ -26,6 +28,9 @@ import QuizScreen      from './src/screens/QuizScreen';
 import FeedbackScreen  from './src/screens/FeedbackScreen';
 import ResultatsScreen from './src/screens/ResultatsScreen';
 import PaywallScreen   from './src/screens/PaywallScreen';
+import AutoEvalScreen  from './src/screens/AutoEvalScreen';
+import NiveauxScreen   from './src/screens/NiveauxScreen';
+import LevelUpScreen   from './src/screens/LevelUpScreen';
 
 // ─── Thème ───────────────────────────────────────────────────────────────────
 import { COLORS } from './src/theme/colors';
@@ -108,7 +113,39 @@ export default function App() {
             component={ResultatsScreen}
           />
 
-          {/* ── 6. Paywall (modale bottom-sheet) ───────────────── */}
+          {/* ── 6. Auto-évaluation ──────────────────────────────── */}
+          <Stack.Screen
+            name="AutoEval"
+            component={AutoEvalScreen}
+          />
+
+          {/* ── 7. Niveaux / Grades ─────────────────────────────── */}
+          <Stack.Screen
+            name="Niveaux"
+            component={NiveauxScreen}
+          />
+
+          {/* ── 8. Level Up (modale plein écran) ───────────────── */}
+          <Stack.Screen
+            name="LevelUp"
+            component={LevelUpScreen}
+            options={{
+              headerShown: false,
+              cardStyle: { backgroundColor: '#FFF8E1' },
+              cardStyleInterpolator: ({ current }) => ({
+                cardStyle: {
+                  transform: [{
+                    translateY: current.progress.interpolate({
+                      inputRange:  [0, 1],
+                      outputRange: [height, 0],
+                    }),
+                  }],
+                },
+              }),
+            }}
+          />
+
+          {/* ── 9. Paywall (modale bottom-sheet) ───────────────── */}
           <Stack.Screen
             name="Paywall"
             component={PaywallScreen}

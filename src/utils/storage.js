@@ -7,6 +7,8 @@ const KEYS = {
   STREAK:        'gdp_streak',
   PROG_MATIERE:  'gdp_prog_matiere',
   DAILY:         'gdp_daily',
+  XP:            'gdp_xp',
+  DAILY_SCORES:  'gdp_daily_scores',
 };
 
 // ─── Scores ────────────────────────────────────────────────────────────────────
@@ -66,13 +68,14 @@ export async function getStats() {
 // ─── Streak ────────────────────────────────────────────────────────────────────
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function yesterdayStr() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 /**
@@ -87,13 +90,15 @@ export async function updateStreak() {
     const raw  = await AsyncStorage.getItem(KEYS.STREAK);
     const data = raw
       ? JSON.parse(raw)
-      : { currentStreak: 0, lastPlayedDate: null };
+      : { currentStreak: 0, bestStreak: 0, lastPlayedDate: null };
+
+    if (!data.bestStreak) data.bestStreak = data.currentStreak ?? 0;
 
     const today     = todayStr();
     const yesterday = yesterdayStr();
 
     if (data.lastPlayedDate === today) {
-      return data; // déjà compté aujourd'hui
+      return data;
     }
 
     data.currentStreak =
@@ -101,24 +106,119 @@ export async function updateStreak() {
         ? data.currentStreak + 1
         : 1;
 
+    if (data.currentStreak > data.bestStreak) data.bestStreak = data.currentStreak;
+
     data.lastPlayedDate = today;
     await AsyncStorage.setItem(KEYS.STREAK, JSON.stringify(data));
     return data;
   } catch (e) {
     console.error('[Storage] updateStreak:', e);
-    return { currentStreak: 1, lastPlayedDate: todayStr() };
+    return { currentStreak: 1, bestStreak: 1, lastPlayedDate: todayStr() };
   }
 }
 
-/** @returns {{ currentStreak: number, lastPlayedDate: string|null }} */
+/** @returns {{ currentStreak: number, bestStreak: number, lastPlayedDate: string|null }} */
 export async function getStreak() {
   try {
     const raw = await AsyncStorage.getItem(KEYS.STREAK);
-    return raw
-      ? JSON.parse(raw)
-      : { currentStreak: 0, lastPlayedDate: null };
+    const data = raw ? JSON.parse(raw) : { currentStreak: 0, bestStreak: 0, lastPlayedDate: null };
+    if (!data.bestStreak) data.bestStreak = data.currentStreak ?? 0;
+    return data;
   } catch {
-    return { currentStreak: 0, lastPlayedDate: null };
+    return { currentStreak: 0, bestStreak: 0, lastPlayedDate: null };
+  }
+}
+
+// ─── XP & Niveaux ─────────────────────────────────────────────────────────────
+
+export const LEVELS = [
+  { name: 'Recrue',      emoji: '🎖️',  min: 0,    color: '#A0A0A0' },
+  { name: 'Gardien',     emoji: '🥈',  min: 500,  color: '#8B8B8B' },
+  { name: 'Brigadier',   emoji: '🥇',  min: 1500, color: '#F5C518' },
+  { name: 'Officier',    emoji: '💎',  min: 3000, color: '#00BFFF' },
+  { name: 'Commandant',  emoji: '🏆',  min: 6000, color: '#FF6B35' },
+];
+
+export function getLevelInfo(xp) {
+  let level = LEVELS[0];
+  for (const l of LEVELS) {
+    if (xp >= l.min) level = l;
+  }
+  const idx  = LEVELS.indexOf(level);
+  const next = LEVELS[idx + 1] ?? null;
+  const pct  = next
+    ? Math.round(((xp - level.min) / (next.min - level.min)) * 100)
+    : 100;
+  return { level, next, pct, xp };
+}
+
+export function calcXP(score, total) {
+  const pct = total > 0 ? Math.round((score / total) * 100) : 0;
+  return score * 10 + (pct >= 80 ? 20 : pct >= 60 ? 10 : 0);
+}
+
+export async function addXP(n) {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.XP);
+    const current = raw ? parseInt(raw, 10) : 0;
+    await AsyncStorage.setItem(KEYS.XP, String(current + n));
+    return current + n;
+  } catch (e) {
+    console.error('[Storage] addXP:', e);
+    return 0;
+  }
+}
+
+export async function getXP() {
+  try {
+    const raw = await AsyncStorage.getItem(KEYS.XP);
+    return raw ? parseInt(raw, 10) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+// ─── Scores journaliers (graphe hebdo) ────────────────────────────────────────
+
+export async function saveDailyScore(pct) {
+  try {
+    const raw  = await AsyncStorage.getItem(KEYS.DAILY_SCORES);
+    const data = raw ? JSON.parse(raw) : {};
+    const today = todayStr();
+    // Garde le meilleur score de la journée
+    data[today] = Math.max(data[today] ?? 0, pct);
+    // Nettoie les entrées > 30 jours
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    for (const key of Object.keys(data)) {
+      if (key < cutoff.toISOString().slice(0, 10)) delete data[key];
+    }
+    await AsyncStorage.setItem(KEYS.DAILY_SCORES, JSON.stringify(data));
+  } catch (e) {
+    console.error('[Storage] saveDailyScore:', e);
+  }
+}
+
+export async function getWeeklyScores() {
+  try {
+    const raw  = await AsyncStorage.getItem(KEYS.DAILY_SCORES);
+    const data = raw ? JSON.parse(raw) : {};
+    const days = ['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'];
+    const result = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      result.push({
+        day:  days[d.getDay()],
+        date: d.getDate(),
+        pct:  data[key] ?? null,
+        isToday: i === 0,
+      });
+    }
+    return result;
+  } catch {
+    return [];
   }
 }
 

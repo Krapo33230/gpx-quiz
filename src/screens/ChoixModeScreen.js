@@ -81,6 +81,16 @@ const MODES = [
     bg: '#EBF6F8',
     categorie: 'FRANÇAIS',
   },
+  {
+    id: 'monde',
+    emoji: '🌐',
+    titre: 'Monde & Citoyenneté',
+    description: 'ONU, UE, histoire, symboles, réseaux',
+    duree: '~8 min',
+    couleur: '#1A6A3A',
+    bg: '#EBF8F0',
+    categorie: 'MONDE',
+  },
 ];
 
 export default function ChoixModeScreen({ navigation }) {

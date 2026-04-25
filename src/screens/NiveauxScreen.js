@@ -4,6 +4,7 @@ import {
   StatusBar, TouchableOpacity, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { getXP, getLevelInfo, LEVELS } from '../utils/storage';
 
@@ -84,20 +85,34 @@ function LevelCard({ level, next, pct, xp, isCurrent, isUnlocked, isLocked }) {
     }
   }, [isCurrent]);
 
-  const bg     = isCurrent ? level.color : isUnlocked ? level.color + '15' : COLORS.surface;
-  const border = isCurrent ? level.color : isUnlocked ? level.color + '40' : COLORS.border;
-  const textC  = isCurrent ? COLORS.white : isLocked ? COLORS.textDisabled : COLORS.text;
+  const showGradient = isCurrent || isUnlocked;
+  const border = isCurrent ? level.color : isUnlocked ? level.color + '60' : COLORS.border;
+  const textC  = isCurrent || isUnlocked ? COLORS.white : isLocked ? COLORS.textDisabled : COLORS.text;
 
   return (
     <Animated.View
       style={[
         styles.card,
         SHADOWS.card,
-        { backgroundColor: bg, borderColor: border, transform: [{ scale: scaleAnim }] },
+        {
+          backgroundColor: isLocked ? COLORS.surface : 'transparent',
+          borderColor: border,
+          transform: [{ scale: scaleAnim }],
+          overflow: 'hidden',
+        },
       ]}
     >
+      {showGradient && (
+        <LinearGradient
+          colors={level.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
+
       {/* Badge */}
-      <View style={[styles.badge, { backgroundColor: isCurrent ? 'rgba(255,255,255,0.2)' : level.color + '20' }]}>
+      <View style={[styles.badge, { backgroundColor: showGradient ? 'rgba(255,255,255,0.22)' : level.color + '20' }]}>
         <Text style={styles.badgeEmoji}>{isLocked ? '🔒' : level.emoji}</Text>
       </View>
 
@@ -105,7 +120,7 @@ function LevelCard({ level, next, pct, xp, isCurrent, isUnlocked, isLocked }) {
         <Text style={[styles.levelName, { color: textC, opacity: isLocked ? 0.5 : 1 }]}>
           {level.name}
         </Text>
-        <Text style={[styles.levelXP, { color: isCurrent ? 'rgba(255,255,255,0.8)' : COLORS.textSecondary, opacity: isLocked ? 0.5 : 1 }]}>
+        <Text style={[styles.levelXP, { color: showGradient ? 'rgba(255,255,255,0.85)' : COLORS.textSecondary, opacity: isLocked ? 0.5 : 1 }]}>
           {isUnlocked ? `✓ Débloqué` : isCurrent ? `${xp} / ${next?.min ?? '∞'} XP` : `À partir de ${level.min} XP`}
         </Text>
 

@@ -15,7 +15,7 @@ import { getStats, getStreak, getProgressionMatiere, getXP, getLevelInfo } from 
 import { CATEGORIES } from '../data/questions';
 
 // Ordre d'affichage des matières
-const MATIERES_ORDER = ['DROIT', 'CULTURE', 'LOGIQUE', 'SECURITE', 'FRANÇAIS'];
+const MATIERES_ORDER = ['DROIT', 'CULTURE', 'LOGIQUE', 'SECURITE', 'FRANÇAIS', 'MONDE'];
 
 export default function AccueilScreen({ navigation }) {
   const [stats, setStats] = useState({
@@ -115,6 +115,10 @@ export default function AccueilScreen({ navigation }) {
             label="🎯  Faire mon auto-évaluation"
             onPress={() => navigation.navigate('AutoEval')}
             style={styles.secondBtn}
+          />
+          <OutlineButton
+            label="📖  Lexique police"
+            onPress={() => navigation.navigate('Lexique')}
           />
           {stats.sessions > 0 && (
             <OutlineButton

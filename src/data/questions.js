@@ -8,6 +8,7 @@ import { QUESTIONS_CULTURE }  from './questions_culture';
 import { QUESTIONS_LOGIQUE }  from './questions_logique';
 import { QUESTIONS_SECURITE } from './questions_securite';
 import { QUESTIONS_FRANÇAIS } from './questions_francais';
+import { QUESTIONS_MONDE }    from './questions_monde';
 
 export const CATEGORIES = {
   DROIT:     { label: 'Droit & Institutions',   emoji: '⚖️',  color: '#1A3F7A' },
@@ -15,6 +16,7 @@ export const CATEGORIES = {
   LOGIQUE:   { label: 'Logique & Raisonnement',  emoji: '🧠',  color: '#7A2B6A' },
   SECURITE:  { label: 'Sécurité & Police',       emoji: '🚔',  color: '#7A4B1A' },
   FRANÇAIS:  { label: 'Français & Expression',   emoji: '📝',  color: '#1A6A7A' },
+  MONDE:     { label: 'Monde & Citoyenneté',     emoji: '🌐',  color: '#1A6A3A' },
 };
 
 export const QUESTIONS = [
@@ -23,6 +25,7 @@ export const QUESTIONS = [
   ...QUESTIONS_LOGIQUE,
   ...QUESTIONS_SECURITE,
   ...QUESTIONS_FRANÇAIS,
+  ...QUESTIONS_MONDE,
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

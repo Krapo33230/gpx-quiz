@@ -31,6 +31,7 @@ import PaywallScreen   from './src/screens/PaywallScreen';
 import AutoEvalScreen  from './src/screens/AutoEvalScreen';
 import NiveauxScreen   from './src/screens/NiveauxScreen';
 import LevelUpScreen   from './src/screens/LevelUpScreen';
+import LexiqueScreen   from './src/screens/LexiqueScreen';
 
 // ─── Thème ───────────────────────────────────────────────────────────────────
 import { COLORS } from './src/theme/colors';
@@ -145,7 +146,13 @@ export default function App() {
             }}
           />
 
-          {/* ── 9. Paywall (modale bottom-sheet) ───────────────── */}
+          {/* ── 9. Lexique Police ───────────────────────────────── */}
+          <Stack.Screen
+            name="Lexique"
+            component={LexiqueScreen}
+          />
+
+          {/* ── 11. Paywall (modale bottom-sheet) ──────────────── */}
           <Stack.Screen
             name="Paywall"
             component={PaywallScreen}

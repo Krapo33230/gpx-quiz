@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Animated,
   ScrollView,
-  StatusBar,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,7 +18,7 @@ const MATIERES_ORDER = ['DROIT', 'CULTURE', 'LOGIQUE', 'SECURITE', 'FRANÇAIS', 
 
 export default function AccueilScreen({ navigation }) {
   const [stats, setStats] = useState({
-    sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0,
+    sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0, bestTotal: 0,
   });
   const [streak,      setStreak]      = useState(0);
   const [progression, setProgression] = useState({});
@@ -63,7 +62,6 @@ export default function AccueilScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── En-tête + streak ── */}
@@ -83,10 +81,9 @@ export default function AccueilScreen({ navigation }) {
             >
               <Text style={styles.rankEmoji}>{xpInfo.level.emoji}</Text>
               <Text style={[styles.rankName, { color: xpInfo.level.color }]}>{xpInfo.level.name}</Text>
-              <Text style={styles.rankXP}>{xpInfo.xp} XP</Text>
             </TouchableOpacity>
           )}
-          <Text style={styles.appName}>GardienQuiz</Text>
+          <Text style={styles.appName}>ConcoursPolice</Text>
           <Text style={styles.subtitle}>Concours Gardien de la Paix</Text>
           <Text style={styles.subtitle2}>Police Nationale</Text>
         </Animated.View>
@@ -98,7 +95,11 @@ export default function AccueilScreen({ navigation }) {
           >
             <StatCard icon="🎯" value={`${tauxReussite}%`} label="Taux de réussite" />
             <StatCard icon="📚" value={stats.sessions}       label="Sessions" />
-            <StatCard icon="⭐" value={stats.bestScore}      label="Meilleur score" />
+            <StatCard
+              icon="⭐"
+              value={stats.bestTotal > 0 ? `${stats.bestScore}/${stats.bestTotal}` : '—'}
+              label="Meilleur score"
+            />
           </Animated.View>
         )}
 
@@ -322,7 +323,6 @@ const styles = StyleSheet.create({
   },
   rankEmoji: { fontSize: 18 },
   rankName:  { ...FONTS.sm, fontWeight: '800' },
-  rankXP:    { ...FONTS.xs, color: COLORS.textDisabled },
 
   footer: {
     ...FONTS.sm,

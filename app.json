@@ -22,7 +22,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.macrez.gpxquiz",
+      "package": "dev.macr.concourspolice",
       "versionCode": 1
     },
     "web": {

@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  StatusBar, TouchableOpacity, TextInput,
+  TouchableOpacity, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { LEXIQUE } from '../data/lexique';
+
+const TOTAL_TERMES = LEXIQUE.reduce((acc, s) => acc + s.termes.length, 0);
 
 export default function LexiqueScreen({ navigation }) {
   const [query, setQuery]       = useState('');
@@ -24,22 +26,19 @@ export default function LexiqueScreen({ navigation }) {
     })).filter(s => s.termes.length > 0);
   }, [query]);
 
-  const totalTermes = LEXIQUE.reduce((acc, s) => acc + s.termes.length, 0);
-
   function toggle(key) {
     setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
   }
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Text style={styles.backText}>← Retour</Text>
         </TouchableOpacity>
         <Text style={styles.titre}>Lexique police</Text>
-        <Text style={styles.sousTitre}>{totalTermes} termes essentiels</Text>
+        <Text style={styles.sousTitre}>{TOTAL_TERMES} termes essentiels</Text>
       </View>
 
       <View style={styles.searchWrap}>
@@ -53,6 +52,11 @@ export default function LexiqueScreen({ navigation }) {
           autoCorrect={false}
           clearButtonMode="while-editing"
         />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => setQuery('')} hitSlop={8} style={styles.clearBtn}>
+            <Text style={styles.clearBtnText}>×</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView
@@ -140,6 +144,8 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     paddingVertical: 0,
   },
+  clearBtn:     { padding: 4 },
+  clearBtnText: { fontSize: 20, color: COLORS.textSecondary, lineHeight: 22 },
 
   scroll: { paddingHorizontal: SPACING.lg },
 

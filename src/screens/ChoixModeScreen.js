@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Animated,
   ScrollView,
-  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
@@ -19,6 +18,7 @@ const MODES = [
     titre: 'Entraînement éclair',
     description: '5 questions rapides, toutes matières',
     duree: '~3 min',
+    count: 5,
     couleur: '#F5C518',
     bg: '#FFFBEA',
   },
@@ -28,6 +28,7 @@ const MODES = [
     titre: 'Quiz complet',
     description: '20 questions, toutes matières mélangées',
     duree: '~15 min',
+    count: 20,
     couleur: '#1A3F7A',
     bg: '#EEF2FA',
   },
@@ -35,8 +36,9 @@ const MODES = [
     id: 'droit',
     emoji: '⚖️',
     titre: 'Droit & Institutions',
-    description: 'Spécialisé Droit, Constitution, Procédure',
+    description: '10 questions · Droit, Constitution, Procédure',
     duree: '~8 min',
+    count: 10,
     couleur: '#1A3F7A',
     bg: '#EEF2FA',
     categorie: 'DROIT',
@@ -45,8 +47,9 @@ const MODES = [
     id: 'culture',
     emoji: '🌍',
     titre: 'Culture Générale',
-    description: 'Histoire, géographie, société française',
+    description: '10 questions · Histoire, géographie, société',
     duree: '~8 min',
+    count: 10,
     couleur: '#2B7A5B',
     bg: '#EBF8F2',
     categorie: 'CULTURE',
@@ -55,8 +58,9 @@ const MODES = [
     id: 'logique',
     emoji: '🧠',
     titre: 'Logique & Raisonnement',
-    description: 'Séries, syllogismes, calculs',
+    description: '10 questions · Séries, syllogismes, calculs',
     duree: '~8 min',
+    count: 10,
     couleur: '#7A2B6A',
     bg: '#F8EBF7',
     categorie: 'LOGIQUE',
@@ -65,8 +69,9 @@ const MODES = [
     id: 'securite',
     emoji: '🚔',
     titre: 'Sécurité & Police',
-    description: 'Organisation police, procédures',
+    description: '10 questions · Organisation police, procédures',
     duree: '~8 min',
+    count: 10,
     couleur: '#7A4B1A',
     bg: '#FBF2E9',
     categorie: 'SECURITE',
@@ -75,8 +80,9 @@ const MODES = [
     id: 'francais',
     emoji: '📝',
     titre: 'Français & Expression',
-    description: 'Orthographe, vocabulaire, grammaire',
+    description: '10 questions · Orthographe, vocabulaire, grammaire',
     duree: '~8 min',
+    count: 10,
     couleur: '#1A6A7A',
     bg: '#EBF6F8',
     categorie: 'FRANÇAIS',
@@ -85,8 +91,9 @@ const MODES = [
     id: 'monde',
     emoji: '🌐',
     titre: 'Monde & Citoyenneté',
-    description: 'ONU, UE, histoire, symboles, réseaux',
+    description: '10 questions · ONU, UE, histoire, symboles',
     duree: '~8 min',
+    count: 10,
     couleur: '#1A6A3A',
     bg: '#EBF8F0',
     categorie: 'MONDE',
@@ -110,16 +117,11 @@ export default function ChoixModeScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-
       {/* ── En-tête ── */}
       <Animated.View
         style={[styles.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Retour</Text>
-        </TouchableOpacity>
-        <Text style={styles.titre}>Choisissez votre mode</Text>
+        <Text style={styles.titre}>Apprendre</Text>
         <Text style={styles.sousTitre}>Sélectionnez une matière ou un mode général</Text>
       </Animated.View>
 
@@ -201,17 +203,15 @@ function ModeCard({ mode, index, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: COLORS.background },
+  safe: { flex: 1, backgroundColor: '#0E1829' },
 
   header: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.md,
     paddingBottom: SPACING.md,
   },
-  backBtn: { marginBottom: SPACING.sm },
-  backText: { ...FONTS.body, color: COLORS.primary, fontWeight: '600' },
-  titre: { ...FONTS.h2, color: COLORS.text, marginBottom: 4 },
-  sousTitre: { ...FONTS.sm, color: COLORS.textSecondary },
+  titre: { ...FONTS.h2, color: '#FFFFFF', marginBottom: 4 },
+  sousTitre: { ...FONTS.sm, color: 'rgba(255,255,255,0.55)' },
 
   scroll: {
     paddingHorizontal: SPACING.lg,
@@ -248,6 +248,6 @@ const styles = StyleSheet.create({
   cardTitre: { ...FONTS.h3, marginBottom: 2 },
   cardDesc: { ...FONTS.sm, color: COLORS.textSecondary, marginBottom: 4 },
   cardMeta: { flexDirection: 'row' },
-  cardDuree: { ...FONTS.xs, color: COLORS.textDisabled, fontWeight: '600' },
+  cardDuree:  { ...FONTS.xs, color: COLORS.textDisabled, fontWeight: '600' },
   arrow: { fontSize: 28, fontWeight: '300', paddingHorizontal: SPACING.sm },
 });

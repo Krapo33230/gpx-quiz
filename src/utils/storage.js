@@ -9,6 +9,9 @@ const KEYS = {
   DAILY:         'gdp_daily',
   XP:            'gdp_xp',
   DAILY_SCORES:  'gdp_daily_scores',
+  ONBOARDING:    'gdp_onboarding',
+  USER_NAME:     'gdp_user_name',
+  OBJECTIF:      'gdp_objectif',
 };
 
 // ─── Scores ────────────────────────────────────────────────────────────────────
@@ -41,12 +44,15 @@ async function _updateStats({ score, total }) {
     const raw = await AsyncStorage.getItem(KEYS.STATS);
     const stats = raw
       ? JSON.parse(raw)
-      : { sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0 };
+      : { sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0, bestTotal: 0 };
 
     stats.sessions       += 1;
     stats.totalCorrect   += score;
     stats.totalQuestions += total;
-    if (score > stats.bestScore) stats.bestScore = score;
+    if (score > stats.bestScore) {
+      stats.bestScore = score;
+      stats.bestTotal = total;
+    }
 
     await AsyncStorage.setItem(KEYS.STATS, JSON.stringify(stats));
   } catch (e) {
@@ -59,23 +65,26 @@ export async function getStats() {
     const raw = await AsyncStorage.getItem(KEYS.STATS);
     return raw
       ? JSON.parse(raw)
-      : { sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0 };
+      : { sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0, bestTotal: 0 };
   } catch {
-    return { sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0 };
+    return { sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0, bestTotal: 0 };
   }
 }
 
 // ─── Streak ────────────────────────────────────────────────────────────────────
 
-function todayStr() {
-  const d = new Date();
+function _formatDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function todayStr() {
+  return _formatDate(new Date());
 }
 
 function yesterdayStr() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return _formatDate(d);
 }
 
 /**
@@ -167,7 +176,7 @@ export function getLevelInfo(xp) {
   const idx  = LEVELS.indexOf(level);
   const next = LEVELS[idx + 1] ?? null;
   const pct  = next
-    ? Math.round(((xp - level.min) / (next.min - level.min)) * 100)
+    ? Math.min(100, Math.round(((xp - level.min) / (next.min - level.min)) * 100))
     : 100;
   return { level, next, pct, xp };
 }
@@ -228,7 +237,7 @@ export async function getWeeklyScores() {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const key = _formatDate(d);
       result.push({
         day:  days[d.getDay()],
         date: d.getDate(),
@@ -352,4 +361,39 @@ export async function clearAll() {
   } catch (e) {
     console.error('[Storage] clearAll:', e);
   }
+}
+
+// ─── Onboarding ───────────────────────────────────────────────────────────────
+
+export async function isOnboardingDone() {
+  try {
+    const v = await AsyncStorage.getItem(KEYS.ONBOARDING);
+    return v === 'done';
+  } catch { return false; }
+}
+
+export async function completeOnboarding(name) {
+  try {
+    await AsyncStorage.multiSet([
+      [KEYS.ONBOARDING, 'done'],
+      [KEYS.USER_NAME, name ?? ''],
+    ]);
+  } catch {}
+}
+
+export async function getUserName() {
+  try {
+    return (await AsyncStorage.getItem(KEYS.USER_NAME)) ?? '';
+  } catch { return ''; }
+}
+
+export async function saveObjectif(questions) {
+  try { await AsyncStorage.setItem(KEYS.OBJECTIF, String(questions)); } catch {}
+}
+
+export async function getObjectif() {
+  try {
+    const v = await AsyncStorage.getItem(KEYS.OBJECTIF);
+    return v ? parseInt(v, 10) : 10;
+  } catch { return 10; }
 }

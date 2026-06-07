@@ -9,44 +9,53 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
-import { PrimaryButton, OutlineButton, StatCard } from '../components/ui';
-import { getStats, getStreak, getProgressionMatiere, getXP, getLevelInfo } from '../utils/storage';
+import { PrimaryButton, OutlineButton, TricolorMark } from '../components/ui';
+import {
+  getStats, getStreak, getProgressionMatiere,
+  getXP, getLevelInfo, getDailyCount, getWeeklyScores, getObjectif,
+} from '../utils/storage';
 import { CATEGORIES } from '../data/questions';
 
-// Ordre d'affichage des matières
+// Valeur par défaut — remplacée dynamiquement par getObjectif()
+const DAILY_GOAL_DEFAULT = 10;
 const MATIERES_ORDER = ['DROIT', 'CULTURE', 'LOGIQUE', 'SECURITE', 'FRANÇAIS', 'MONDE'];
 
 export default function AccueilScreen({ navigation }) {
-  const [stats, setStats] = useState({
-    sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0, bestTotal: 0,
-  });
+  const [stats,       setStats]       = useState({ sessions: 0, totalCorrect: 0, totalQuestions: 0 });
   const [streak,      setStreak]      = useState(0);
   const [progression, setProgression] = useState({});
   const [xpInfo,      setXpInfo]      = useState(null);
+  const [dailyCount,  setDailyCount]  = useState(0);
+  const [dailyGoal,   setDailyGoal]   = useState(DAILY_GOAL_DEFAULT);
+  const [weekDays,    setWeekDays]    = useState([]);
 
   const fadeAnim  = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(40)).current;
-  const logoScale = useRef(new Animated.Value(0.6)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
 
   async function loadAll() {
-    const [s, sk, prog, xp] = await Promise.all([
+    const [s, sk, prog, xp, daily, weekly, goal] = await Promise.all([
       getStats(),
       getStreak(),
       getProgressionMatiere(),
       getXP(),
+      getDailyCount(),
+      getWeeklyScores(),
+      getObjectif(),
     ]);
     setStats(s);
     setStreak(sk.currentStreak);
     setProgression(prog);
     setXpInfo(getLevelInfo(xp));
+    setDailyCount(daily);
+    setDailyGoal(goal);
+    setWeekDays(buildWeekRow(weekly));
   }
 
   useEffect(() => {
     loadAll();
     Animated.parallel([
-      Animated.timing(fadeAnim,  { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.timing(fadeAnim,  { toValue: 1, duration: 500, useNativeDriver: true }),
       Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 50, useNativeDriver: true }),
-      Animated.spring(logoScale, { toValue: 1, friction: 6, tension: 60, useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -55,67 +64,89 @@ export default function AccueilScreen({ navigation }) {
     return unsub;
   }, [navigation]);
 
-  const tauxReussite =
-    stats.totalQuestions > 0
-      ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100)
-      : 0;
+  const questPct    = Math.min((dailyCount / dailyGoal) * 100, 100);
+  const questDone   = dailyCount >= dailyGoal;
+  const mascotMsg   = getMascotMessage(streak, dailyCount, stats.sessions);
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* ── En-tête + streak ── */}
-        <Animated.View
-          style={[styles.header, { opacity: fadeAnim, transform: [{ scale: logoScale }] }]}
-        >
-          <View style={styles.headerRow}>
-            <View style={styles.badge}>
-              <Text style={styles.badgeEmoji}>🚔</Text>
-            </View>
-            {streak > 0 && <StreakBadge streak={streak} />}
+        {/* ── Barre de stats en haut (style Duolingo) ── */}
+        <Animated.View style={[styles.topBar, { opacity: fadeAnim }]}>
+          <View style={styles.topStat}>
+            <Text style={styles.topStatIcon}>🔥</Text>
+            <Text style={[styles.topStatValue, { color: '#E67E00' }]}>{streak}</Text>
           </View>
+          <TouchableOpacity onPress={() => navigation.navigate('Niveaux')} style={styles.topStat}>
+            <Text style={styles.topStatIcon}>⚡</Text>
+            <Text style={[styles.topStatValue, { color: COLORS.accent }]}>{xpInfo?.xp ?? 0}</Text>
+          </TouchableOpacity>
           {xpInfo && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Niveaux')}
-              style={styles.rankBadge}
-            >
-              <Text style={styles.rankEmoji}>{xpInfo.level.emoji}</Text>
-              <Text style={[styles.rankName, { color: xpInfo.level.color }]}>{xpInfo.level.name}</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Niveaux')} style={styles.topStatBadge}>
+              <Text style={styles.topStatBadgeEmoji}>{xpInfo.level.emoji}</Text>
+              <Text style={[styles.topStatBadgeLabel, { color: xpInfo.level.color }]}>{xpInfo.level.name}</Text>
             </TouchableOpacity>
           )}
-          <Text style={styles.appName}>ConcoursPolice</Text>
-          <Text style={styles.subtitle}>Concours Gardien de la Paix</Text>
-          <Text style={styles.subtitle2}>Police Nationale</Text>
         </Animated.View>
 
-        {/* ── Stats globales ── */}
-        {stats.sessions > 0 && (
-          <Animated.View
-            style={[styles.statsRow, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-          >
-            <StatCard icon="🎯" value={`${tauxReussite}%`} label="Taux de réussite" />
-            <StatCard icon="📚" value={stats.sessions}       label="Sessions" />
-            <StatCard
-              icon="⭐"
-              value={stats.bestTotal > 0 ? `${stats.bestScore}/${stats.bestTotal}` : '—'}
-              label="Meilleur score"
-            />
-          </Animated.View>
-        )}
+        {/* ── Mascotte + bulle ── */}
+        <Animated.View style={[styles.mascotSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+          <View style={styles.bubbleWrap}>
+            <View style={styles.bubble}>
+              <Text style={styles.bubbleText}>{mascotMsg}</Text>
+            </View>
+            <View style={styles.bubbleTip} />
+          </View>
+          <TricolorMark size="xl" style={{ marginBottom: 4 }} />
+        </Animated.View>
+
+        {/* ── Quête du jour ── */}
+        <Animated.View style={[styles.questCard, SHADOWS.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+          <View style={styles.questHeader}>
+            <Text style={styles.questTag}>QUÊTE DU JOUR</Text>
+            {questDone && <Text style={styles.questDoneTag}>✓ COMPLÉTÉE</Text>}
+          </View>
+          <Text style={styles.questTitle}>Réponds à {dailyGoal} questions</Text>
+          <View style={styles.questBarTrack}>
+            <View style={[styles.questBarFill, { width: `${questPct}%` }]} />
+          </View>
+          <Text style={styles.questProgress}>{Math.min(dailyCount, dailyGoal)}/{dailyGoal}</Text>
+        </Animated.View>
+
+        {/* ── Série — cercles des jours ── */}
+        <Animated.View style={[styles.weekCard, SHADOWS.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+          <View style={styles.weekHeader}>
+            <Text style={styles.weekTitle}>🔥 Série · {streak} {streak === 1 ? 'jour' : 'jours'}</Text>
+          </View>
+          <View style={styles.weekRow}>
+            {weekDays.map((d, i) => (
+              <View key={i} style={styles.weekDayCol}>
+                <Text style={styles.weekDayLetter}>{d.label}</Text>
+                <View style={[
+                  styles.weekCircle,
+                  d.played  && styles.weekCircleDone,
+                  d.isToday && !d.played && styles.weekCircleToday,
+                ]}>
+                  {d.played
+                    ? <Text style={styles.weekCircleCheck}>✓</Text>
+                    : <Text style={styles.weekCircleDot}>·</Text>
+                  }
+                </View>
+              </View>
+            ))}
+          </View>
+        </Animated.View>
 
         {/* ── Boutons principaux ── */}
-        <Animated.View
-          style={[styles.actions, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-        >
+        <Animated.View style={[styles.actions, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <PrimaryButton
             label="🚀  Commencer l'entraînement"
             onPress={() => navigation.navigate('ChoixMode')}
-            style={styles.mainBtn}
           />
           <OutlineButton
             label="🎯  Faire mon auto-évaluation"
             onPress={() => navigation.navigate('AutoEval')}
-            style={styles.secondBtn}
           />
           <OutlineButton
             label="📖  Lexique police"
@@ -130,9 +161,7 @@ export default function AccueilScreen({ navigation }) {
         </Animated.View>
 
         {/* ── Progression par matière ── */}
-        <Animated.View
-          style={[styles.matieres, SHADOWS.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-        >
+        <Animated.View style={[styles.matieres, SHADOWS.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <Text style={styles.matieresTitre}>Progression par matière</Text>
           {MATIERES_ORDER.map((key) => {
             const cat = CATEGORIES[key];
@@ -151,31 +180,9 @@ export default function AccueilScreen({ navigation }) {
           })}
         </Animated.View>
 
-        <Text style={styles.footer}>Préparez-vous avec confiance 💪</Text>
+        <Text style={styles.footer}>Prépare-toi avec confiance 💪</Text>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-// ─── StreakBadge ──────────────────────────────────────────────────────────────
-function StreakBadge({ streak }) {
-  const pulse = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.12, duration: 700, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 1,    duration: 700, useNativeDriver: true }),
-      ]),
-    ).start();
-  }, []);
-
-  return (
-    <Animated.View style={[styles.streakBadge, { transform: [{ scale: pulse }] }]}>
-      <Text style={styles.streakEmoji}>🔥</Text>
-      <Text style={styles.streakNumber}>{streak}</Text>
-      <Text style={styles.streakLabel}>{streak === 1 ? 'jour' : 'jours'}</Text>
-    </Animated.View>
   );
 }
 
@@ -184,11 +191,7 @@ function MatiereBar({ emoji, label, color, pct, hasData }) {
   const anim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    Animated.timing(anim, {
-      toValue: pct / 100,
-      duration: 700,
-      useNativeDriver: false,
-    }).start();
+    Animated.timing(anim, { toValue: pct / 100, duration: 700, useNativeDriver: false }).start();
   }, [pct]);
 
   const barColor =
@@ -211,10 +214,7 @@ function MatiereBar({ emoji, label, color, pct, hasData }) {
           <Animated.View
             style={[
               styles.barFill,
-              {
-                backgroundColor: barColor,
-                width: anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-              },
+              { backgroundColor: barColor, width: anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) },
             ]}
           />
         </View>
@@ -223,111 +223,151 @@ function MatiereBar({ emoji, label, color, pct, hasData }) {
   );
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function getMascotMessage(streak, dailyCount, sessions) {
+  if (sessions === 0)    return "Bienvenue ! Commençons ta préparation au concours 👋";
+  if (dailyCount >= 10)  return "Quête du jour complétée ! Tu es en feu aujourd'hui 🔥";
+  if (streak >= 7)       return `${streak} jours de suite ! Tu es inarrêtable 🏆`;
+  if (streak >= 3)       return `Série de ${streak} jours ! Continue comme ça 💪`;
+  if (dailyCount > 0)    return "Bien parti ! Encore quelques questions pour finir ta quête.";
+  return "C'est l'heure de s'entraîner ! Bonne session 🎯";
+}
+
+function buildWeekRow(weeklyScores) {
+  return weeklyScores.map(item => ({
+    label:   item.day,
+    played:  item.pct !== null,
+    isToday: item.isToday,
+  }));
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: COLORS.background },
+  safe:   { flex: 1, backgroundColor: '#0E1829' },
   scroll: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xxl },
 
-  // En-tête
-  header: {
-    alignItems: 'center',
-    paddingTop: SPACING.xl,
-    paddingBottom: SPACING.lg,
-  },
-  headerRow: {
+  // Top bar
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
-    marginBottom: SPACING.md,
+    justifyContent: 'space-between',
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1E2F48',
+    marginBottom: SPACING.lg,
   },
-  badge: {
-    width: 90, height: 90,
-    borderRadius: RADIUS.xl,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center', justifyContent: 'center',
-    ...SHADOWS.button,
-  },
-  badgeEmoji: { fontSize: 42 },
-  appName:   { ...FONTS.h1, color: COLORS.primary, marginBottom: 4 },
-  subtitle:  { ...FONTS.body, color: COLORS.textSecondary, fontWeight: '600' },
-  subtitle2: { ...FONTS.sm, color: COLORS.textDisabled, marginTop: 2 },
+  topStat: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  topStatIcon:  { fontSize: 20 },
+  topStatValue: { ...FONTS.h3, fontWeight: '900' },
+  topStatBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#162034', borderRadius: RADIUS.pill, paddingHorizontal: SPACING.sm, paddingVertical: 4, borderWidth: 1, borderColor: '#1E2F48' },
+  topStatBadgeEmoji: { fontSize: 16 },
+  topStatBadgeLabel: { ...FONTS.xs, fontWeight: '800' },
 
-  // Streak
-  streakBadge: {
-    backgroundColor: '#FFF3E0',
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.xs,
+  // Mascotte
+  mascotSection: {
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#F09E1A',
-    minWidth: 64,
+    marginBottom: SPACING.lg,
   },
-  streakEmoji:  { fontSize: 22 },
-  streakNumber: { ...FONTS.h2, color: '#E67E00', lineHeight: 26 },
-  streakLabel:  { ...FONTS.xs, color: '#E67E00', fontWeight: '600' },
+  bubbleWrap: { alignItems: 'center', marginBottom: 4 },
+  bubble: {
+    backgroundColor: '#162034',
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    maxWidth: '90%',
+    borderWidth: 1,
+    borderColor: '#1E2F48',
+    ...SHADOWS.card,
+  },
+  bubbleText: { ...FONTS.body, color: '#FFFFFF', textAlign: 'center', lineHeight: 22 },
+  bubbleTip: {
+    width: 0, height: 0,
+    borderLeftWidth: 8, borderRightWidth: 8, borderTopWidth: 10,
+    borderLeftColor: 'transparent', borderRightColor: 'transparent',
+    borderTopColor: '#1E2F48',
+    marginTop: -1,
+  },
+  mascot: { fontSize: 72 },
 
-  // Stats
-  statsRow: { flexDirection: 'row', marginBottom: SPACING.lg },
+  // Quête du jour
+  questCard: {
+    backgroundColor: '#162034',
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: '#1E2F48',
+  },
+  questHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  questTag:     { ...FONTS.xs, color: '#FFFFFF', fontWeight: '800', letterSpacing: 0.8 },
+  questDoneTag: { ...FONTS.xs, color: COLORS.success, fontWeight: '800', letterSpacing: 0.8 },
+  questTitle:   { ...FONTS.body, color: '#FFFFFF', fontWeight: '600', marginBottom: SPACING.sm },
+  questBarTrack: {
+    height: 12,
+    borderRadius: RADIUS.pill,
+    backgroundColor: '#1E2F48',
+    overflow: 'hidden',
+    marginBottom: 6,
+  },
+  questBarFill: {
+    height: '100%',
+    borderRadius: RADIUS.pill,
+    backgroundColor: '#FFFFFF',
+  },
+  questProgress: { ...FONTS.xs, color: '#8A9BB5', fontWeight: '700', textAlign: 'right' },
+
+  // Semaine / streak
+  weekCard: {
+    backgroundColor: '#162034',
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
+    borderColor: '#1E2F48',
+  },
+  weekHeader: { marginBottom: SPACING.sm },
+  weekTitle:  { ...FONTS.h3, color: '#FFFFFF' },
+  weekRow:    { flexDirection: 'row', justifyContent: 'space-between' },
+  weekDayCol: { alignItems: 'center', gap: 4 },
+  weekDayLetter: { ...FONTS.xs, color: '#8A9BB5', fontWeight: '700' },
+  weekCircle: {
+    width: 36, height: 36,
+    borderRadius: 18,
+    backgroundColor: '#1E2F48',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  weekCircleDone:  { backgroundColor: '#FFFFFF' },
+  weekCircleToday: { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: '#0E1829' },
+  weekCircleCheck: { color: '#0E1829', fontSize: 16, fontWeight: '900' },
+  weekCircleDot:   { color: '#4A5A6E', fontSize: 20 },
 
   // Boutons
   actions: { gap: SPACING.sm, marginBottom: SPACING.xl },
-  mainBtn:   { marginBottom: SPACING.xs },
-  secondBtn: {},
 
   // Progression matières
   matieres: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#162034',
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.lg,
   },
-  matieresTitre: { ...FONTS.h3, color: COLORS.text, marginBottom: SPACING.md },
-
+  matieresTitre: { ...FONTS.h3, color: '#FFFFFF', marginBottom: SPACING.md },
   matiereRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: SPACING.sm,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: '#1E2F48',
     gap: SPACING.sm,
   },
   matiereEmoji:   { fontSize: 20, width: 28 },
   matiereContent: { flex: 1 },
   matiereHeader:  { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  matiereLabel:   { ...FONTS.sm, color: COLORS.text, flex: 1 },
+  matiereLabel:   { ...FONTS.sm, color: '#FFFFFF', flex: 1 },
   matierePct:     { ...FONTS.sm, fontWeight: '700' },
+  barTrack: { height: 8, borderRadius: RADIUS.pill, backgroundColor: '#1E2F48', overflow: 'hidden' },
+  barFill:  { height: '100%', borderRadius: RADIUS.pill },
 
-  barTrack: {
-    height: 8,
-    borderRadius: RADIUS.pill,
-    backgroundColor: COLORS.border,
-    overflow: 'hidden',
-  },
-  barFill: {
-    height: '100%',
-    borderRadius: RADIUS.pill,
-  },
-
-  rankBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.pill,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginTop: SPACING.sm,
-  },
-  rankEmoji: { fontSize: 18 },
-  rankName:  { ...FONTS.sm, fontWeight: '800' },
-
-  footer: {
-    ...FONTS.sm,
-    color: COLORS.textDisabled,
-    textAlign: 'center',
-    marginTop: SPACING.md,
-  },
+  footer: { ...FONTS.sm, color: '#4A5A6E', textAlign: 'center', marginTop: SPACING.md },
 });

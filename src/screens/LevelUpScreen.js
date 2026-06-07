@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, Animated,
-  TouchableOpacity, Dimensions, StatusBar,
+  TouchableOpacity, Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
@@ -22,14 +22,14 @@ function makeConfetti() {
   }));
 }
 
-const CONFETTI_DATA = makeConfetti();
-
 export default function LevelUpScreen({ navigation, route }) {
   const { newLevel, xpGained, totalXP } = route.params;
 
+  const [confettiData] = useState(() => makeConfetti());
+
   // Confetti animations
   const confettiAnims = useRef(
-    CONFETTI_DATA.map(() => ({
+    confettiData.map(() => ({
       y: new Animated.Value(-60),
       opacity: new Animated.Value(1),
       rotate: new Animated.Value(0),
@@ -45,7 +45,7 @@ export default function LevelUpScreen({ navigation, route }) {
   useEffect(() => {
     // Lancer les confettis
     confettiAnims.forEach(({ y, opacity, rotate }, i) => {
-      const { delay, duration } = CONFETTI_DATA[i];
+      const { delay, duration } = confettiData[i];
       Animated.parallel([
         Animated.timing(y, {
           toValue: height + 60,
@@ -75,7 +75,7 @@ export default function LevelUpScreen({ navigation, route }) {
     ]).start();
 
     // Pulse badge
-    setTimeout(() => {
+    const pulseTimer = setTimeout(() => {
       Animated.loop(
         Animated.sequence([
           Animated.spring(badgeBounce, { toValue: -10, friction: 3, useNativeDriver: true }),
@@ -93,14 +93,15 @@ export default function LevelUpScreen({ navigation, route }) {
       Animated.delay(700),
       Animated.timing(btnFade, { toValue: 1, duration: 400, useNativeDriver: true }),
     ]).start();
+
+    return () => clearTimeout(pulseTimer);
   }, []);
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF8E1" />
 
       {/* ── Confettis ── */}
-      {CONFETTI_DATA.map((c, i) => {
+      {confettiData.map((c, i) => {
         const { y, opacity, rotate } = confettiAnims[i];
         const spin = rotate.interpolate({ inputRange: [0, 1], outputRange: [`${c.rotation}deg`, `${c.rotation + 720}deg`] });
         return (

@@ -4,21 +4,35 @@
  *
  * Architecture :
  *   App.js
- *   ├── NavigationContainer (React Navigation)
- *   └── Stack.Navigator (5 écrans)
- *       ├── AccueilScreen    → Accueil avec stats
- *       ├── ChoixModeScreen  → Sélection du mode / matière
- *       ├── QuizScreen       → Session de quiz avec timer
- *       ├── FeedbackScreen   → Correction détaillée + explication
- *       └── ResultatsScreen  → Statistiques & historique
+ *   ├── SafeAreaProvider
+ *   └── NavigationContainer (React Navigation)
+ *       └── Stack.Navigator
+ *           ├── WelcomeScreen
+ *           ├── OnboardingScreen
+ *           ├── MainTabs (bottom tab navigator)
+ *           │   ├── AccueilScreen   (tab 1 – Accueil)
+ *           │   ├── ChoixModeScreen (tab 2 – Apprendre)
+ *           │   ├── NiveauxScreen   (tab 3 – Grades)
+ *           │   └── PlusScreen      (tab 4 – Plus)
+ *           ├── QuizScreen
+ *           ├── FeedbackScreen
+ *           ├── ResultatsScreen
+ *           ├── AutoEvalScreen
+ *           ├── LevelUpScreen  (slide from bottom)
+ *           ├── LexiqueScreen
+ *           └── PaywallScreen  (slide from bottom)
  */
 
 import 'react-native-gesture-handler';            // ← doit être la 1ère importation
-import React from 'react';
-import { Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Dimensions, Text } from 'react-native';
+import { isOnboardingDone } from './src/utils/storage';
 const { height } = Dimensions.get('window');
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { initPurchases } from './src/utils/purchases';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 
 // ─── Écrans ──────────────────────────────────────────────────────────────────
@@ -32,11 +46,15 @@ import AutoEvalScreen  from './src/screens/AutoEvalScreen';
 import NiveauxScreen   from './src/screens/NiveauxScreen';
 import LevelUpScreen   from './src/screens/LevelUpScreen';
 import LexiqueScreen   from './src/screens/LexiqueScreen';
+import WelcomeScreen   from './src/screens/WelcomeScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
+import PlusScreen      from './src/screens/PlusScreen';
 
 // ─── Thème ───────────────────────────────────────────────────────────────────
 import { COLORS } from './src/theme/colors';
 
 const Stack = createStackNavigator();
+const Tab   = createBottomTabNavigator();
 
 /**
  * Options par défaut du navigator.
@@ -75,58 +93,121 @@ const screenOptions = {
   },
 };
 
-export default function App() {
+// ─── Bottom tab navigator ─────────────────────────────────────────────────────
+function MainTabs() {
   return (
-    <>
-      <StatusBar style="dark" />
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: '#0A1020',
+          borderTopColor: '#1E2F48',
+          borderTopWidth: 1,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 6,
+        },
+        tabBarActiveTintColor: '#FFFFFF',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.35)',
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+      }}
+    >
+      <Tab.Screen
+        name="Accueil"
+        component={AccueilScreen}
+        options={{
+          tabBarLabel: 'Accueil',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 20, color }}>🏠</Text>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="ChoixMode"
+        component={ChoixModeScreen}
+        options={{
+          tabBarLabel: 'Apprendre',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 20, color }}>📚</Text>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Niveaux"
+        component={NiveauxScreen}
+        options={{
+          tabBarLabel: 'Grades',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 20, color }}>🏆</Text>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Plus"
+        component={PlusScreen}
+        options={{
+          tabBarLabel: 'Plus',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 20, color }}>☰</Text>
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
+export default function App() {
+  const [initialRoute, setInitialRoute] = useState(null);
+
+  useEffect(() => {
+    initPurchases();
+    // Force Welcome pour tester l'onboarding — remettre la ligne du dessous quand c'est validé
+    setInitialRoute('Welcome');
+    // isOnboardingDone().then(done => setInitialRoute(done ? 'Main' : 'Welcome'));
+  }, []);
+
+  if (!initialRoute) return null; // attend la vérification AsyncStorage
+
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="light" />
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Accueil"
+          initialRouteName={initialRoute}
           screenOptions={screenOptions}
         >
-          {/* ── 1. Accueil ──────────────────────────────────────── */}
-          <Stack.Screen
-            name="Accueil"
-            component={AccueilScreen}
-          />
+          {/* ── 0. Welcome / Onboarding ─────────────────────────── */}
+          <Stack.Screen name="Welcome"    component={WelcomeScreen} />
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
 
-          {/* ── 2. Choix du mode ────────────────────────────────── */}
-          <Stack.Screen
-            name="ChoixMode"
-            component={ChoixModeScreen}
-          />
+          {/* ── 1. Main (bottom tabs) ───────────────────────────── */}
+          <Stack.Screen name="Main" component={MainTabs} />
 
-          {/* ── 3. Quiz (reçoit : mode) ──────────────────────────── */}
+          {/* ── 2. Quiz (reçoit : mode) ──────────────────────────── */}
           <Stack.Screen
             name="Quiz"
             component={QuizScreen}
           />
 
-          {/* ── 4. Feedback (reçoit : score, total, details, mode) ── */}
+          {/* ── 3. Feedback (reçoit : score, total, details, mode) ── */}
           <Stack.Screen
             name="Feedback"
             component={FeedbackScreen}
           />
 
-          {/* ── 5. Résultats / Statistiques ─────────────────────── */}
+          {/* ── 4. Résultats / Statistiques ─────────────────────── */}
           <Stack.Screen
             name="Resultats"
             component={ResultatsScreen}
           />
 
-          {/* ── 6. Auto-évaluation ──────────────────────────────── */}
+          {/* ── 5. Auto-évaluation ──────────────────────────────── */}
           <Stack.Screen
             name="AutoEval"
             component={AutoEvalScreen}
           />
 
-          {/* ── 7. Niveaux / Grades ─────────────────────────────── */}
-          <Stack.Screen
-            name="Niveaux"
-            component={NiveauxScreen}
-          />
-
-          {/* ── 8. Level Up (modale plein écran) ───────────────── */}
+          {/* ── 6. Level Up (modale plein écran) ───────────────── */}
           <Stack.Screen
             name="LevelUp"
             component={LevelUpScreen}
@@ -146,13 +227,13 @@ export default function App() {
             }}
           />
 
-          {/* ── 9. Lexique Police ───────────────────────────────── */}
+          {/* ── 7. Lexique Police ───────────────────────────────── */}
           <Stack.Screen
             name="Lexique"
             component={LexiqueScreen}
           />
 
-          {/* ── 11. Paywall (modale bottom-sheet) ──────────────── */}
+          {/* ── 8. Paywall (modale bottom-sheet) ──────────────── */}
           <Stack.Screen
             name="Paywall"
             component={PaywallScreen}
@@ -168,7 +249,7 @@ export default function App() {
                     {
                       translateY: current.progress.interpolate({
                         inputRange:  [0, 1],
-                        outputRange: [900, 0],
+                        outputRange: [height, 0],
                       }),
                     },
                   ],
@@ -178,6 +259,6 @@ export default function App() {
           />
         </Stack.Navigator>
       </NavigationContainer>
-    </>
+    </SafeAreaProvider>
   );
 }

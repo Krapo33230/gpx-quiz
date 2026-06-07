@@ -26,20 +26,19 @@ export const FONTS = {
   body: { fontSize: 16, fontWeight: '400', lineHeight: 24 },
   sm:   { fontSize: 14, fontWeight: '400', lineHeight: 20 },
   xs:   { fontSize: 12, fontWeight: '500' },
-  bold: { fontWeight: '700' },
 };
 
 // ─── Ombres ────────────────────────────────────────────────────────────────────
 export const SHADOWS = {
   card: {
-    shadowColor: '#1A3F7A',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.10,
     shadowRadius: 12,
     elevation: 5,
   },
   button: {
-    shadowColor: '#1A3F7A',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,

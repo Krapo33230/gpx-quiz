@@ -8,6 +8,25 @@ import {
 } from 'react-native';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 
+// ─── TricolorMark ──────────────────────────────────────────────────────────────
+const TRICOLOR_SIZES = {
+  xs: { w: 5,  h: 20, r: 3, gap: 3 },
+  sm: { w: 7,  h: 28, r: 3, gap: 4 },
+  md: { w: 9,  h: 36, r: 4, gap: 5 },
+  lg: { w: 13, h: 52, r: 5, gap: 6 },
+  xl: { w: 17, h: 68, r: 7, gap: 8 },
+};
+export function TricolorMark({ size = 'md', style }) {
+  const s = TRICOLOR_SIZES[size] || TRICOLOR_SIZES.md;
+  return (
+    <View style={[{ flexDirection: 'row', gap: s.gap }, style]}>
+      <View style={{ width: s.w, height: s.h, borderRadius: s.r, backgroundColor: '#002395' }} />
+      <View style={{ width: s.w, height: s.h, borderRadius: s.r, backgroundColor: '#FFFFFF' }} />
+      <View style={{ width: s.w, height: s.h, borderRadius: s.r, backgroundColor: '#ED2939' }} />
+    </View>
+  );
+}
+
 // ─── PrimaryButton ─────────────────────────────────────────────────────────────
 export function PrimaryButton({ label, onPress, disabled = false, style }) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -38,13 +57,13 @@ export function PrimaryButton({ label, onPress, disabled = false, style }) {
 }
 
 // ─── OutlineButton ─────────────────────────────────────────────────────────────
-export function OutlineButton({ label, onPress, style }) {
+export function OutlineButton({ label, onPress, disabled = false, style }) {
   const scale = useRef(new Animated.Value(1)).current;
 
   const onPressIn = () =>
-    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true }).start();
+    !disabled && Animated.spring(scale, { toValue: 0.97, useNativeDriver: true }).start();
   const onPressOut = () =>
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
+    !disabled && Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
 
   return (
     <Animated.View style={[{ transform: [{ scale }] }, style]}>
@@ -52,10 +71,13 @@ export function OutlineButton({ label, onPress, style }) {
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
+        disabled={disabled}
         activeOpacity={0.8}
-        style={styles.outlineBtn}
+        style={[styles.outlineBtn, disabled && styles.outlineBtnDisabled]}
       >
-        <Text style={styles.outlineBtnText}>{label}</Text>
+        <Text style={[styles.outlineBtnText, disabled && styles.outlineBtnTextDisabled]}>
+          {label}
+        </Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -125,6 +147,7 @@ const styles = StyleSheet.create({
     ...FONTS.h3,
     color: COLORS.white,
     letterSpacing: 0.5,
+    textAlign: 'center',
   },
 
   outlineBtn: {
@@ -140,6 +163,14 @@ const styles = StyleSheet.create({
   outlineBtnText: {
     ...FONTS.h3,
     color: COLORS.primary,
+    textAlign: 'center',
+  },
+  outlineBtnDisabled: {
+    borderColor: COLORS.textDisabled,
+    backgroundColor: COLORS.surface,
+  },
+  outlineBtnTextDisabled: {
+    color: COLORS.textDisabled,
   },
 
   progressTrack: {

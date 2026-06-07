@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Animated,
   ScrollView,
-  StatusBar,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -164,7 +163,6 @@ export default function QuizScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       {/* ── Top bar : quitter + progression + timer ── */}
       <View style={styles.topBar}>
@@ -182,6 +180,19 @@ export default function QuizScreen({ navigation, route }) {
         <View style={[styles.timerBadge, { borderColor: timerColor }]}>
           <Text style={[styles.timerText, { color: timerColor }]}>{timeLeft}s</Text>
         </View>
+      </View>
+
+      {/* ── Barre timer ── */}
+      <View style={styles.timerTrack}>
+        <View
+          style={[
+            styles.timerFill,
+            {
+              width: `${(timeLeft / TIMER_SECONDS) * 100}%`,
+              backgroundColor: timerColor,
+            },
+          ]}
+        />
       </View>
 
       <ScrollView
@@ -212,27 +223,55 @@ export default function QuizScreen({ navigation, route }) {
           <View style={styles.cardTop}>
             <CategoryBadge label={cat.label} emoji={cat.emoji} color={cat.color} />
             <View style={styles.scorePill}>
-              <Text style={styles.scoreText}>⭐ {score}</Text>
+              <Text style={styles.scoreText}>⭐ {score}/{questions.length}</Text>
             </View>
           </View>
 
           <Text style={styles.enonce}>{question.enonce}</Text>
+
+          {/* Phrase à compléter (uniquement pour le type completion) */}
+          {question.type === 'completion' && (
+            <PhraseWithBlank
+              phrase={question.phrase}
+              selectedWord={selected !== null ? question.options[selected] : null}
+              isCorrect={answered && selected === question.correctIndex}
+              isWrong={answered && selected !== null && selected !== question.correctIndex}
+              correctWord={answered ? question.options[question.correctIndex] : null}
+            />
+          )}
         </Animated.View>
 
-        {/* ── Boutons réponses ── */}
-        <View style={styles.options}>
-          {question.options.map((opt, i) => (
-            <OptionButton
-              key={i}
-              index={i}
-              label={opt}
-              answered={answered}
-              selected={selected}
-              correctIndex={question.correctIndex}
-              onPress={() => handleAnswer(i)}
-            />
-          ))}
-        </View>
+        {/* ── Exercice (UI selon le type) ── */}
+        {question.type === 'vrai_faux' ? (
+          <VraiFauxButtons
+            answered={answered}
+            selected={selected}
+            correctIndex={question.correctIndex}
+            onPress={handleAnswer}
+          />
+        ) : question.type === 'completion' ? (
+          <WordChips
+            options={question.options}
+            answered={answered}
+            selected={selected}
+            correctIndex={question.correctIndex}
+            onPress={handleAnswer}
+          />
+        ) : (
+          <View style={styles.options}>
+            {question.options.map((opt, i) => (
+              <OptionButton
+                key={i}
+                index={i}
+                label={opt}
+                answered={answered}
+                selected={selected}
+                correctIndex={question.correctIndex}
+                onPress={() => handleAnswer(i)}
+              />
+            ))}
+          </View>
+        )}
 
         {/* ── Panneau explication ── */}
         {answered && (
@@ -292,6 +331,76 @@ export default function QuizScreen({ navigation, route }) {
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+// ─── PhraseWithBlank ──────────────────────────────────────────────────────────
+function PhraseWithBlank({ phrase, selectedWord, isCorrect, isWrong, correctWord }) {
+  const parts = phrase.split('___');
+  const blankColor = isCorrect ? COLORS.success : isWrong ? COLORS.danger : '#FFFFFF';
+  const blankText  = selectedWord || '_______';
+
+  return (
+    <View style={styles.phraseWrap}>
+      <Text style={styles.phraseText}>
+        {parts[0]}
+        <Text style={[styles.phraseBlank, { color: blankColor }]}>{blankText}</Text>
+        {parts[1] ?? ''}
+      </Text>
+      {isWrong && correctWord && (
+        <Text style={styles.phraseCorrection}>→ {correctWord}</Text>
+      )}
+    </View>
+  );
+}
+
+// ─── VraiFauxButtons ──────────────────────────────────────────────────────────
+function VraiFauxButtons({ answered, selected, correctIndex, onPress }) {
+  function btnStyle(idx) {
+    const base = [styles.vfBtn, idx === 0 ? styles.vfBtnVrai : styles.vfBtnFaux];
+    if (!answered) return base;
+    if (idx === correctIndex) return [...base, styles.vfCorrect];
+    if (idx === selected)     return [...base, styles.vfWrong];
+    return [...base, styles.vfDimmed];
+  }
+  return (
+    <View style={styles.vfRow}>
+      {['VRAI', 'FAUX'].map((label, idx) => (
+        <TouchableOpacity
+          key={label}
+          style={btnStyle(idx)}
+          onPress={() => !answered && onPress(idx)}
+          disabled={answered}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.vfIcon}>{idx === 0 ? '✓' : '✗'}</Text>
+          <Text style={styles.vfLabel}>{label}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+}
+
+// ─── WordChips ────────────────────────────────────────────────────────────────
+function WordChips({ options, answered, selected, correctIndex, onPress }) {
+  return (
+    <View style={styles.chips}>
+      {options.map((opt, i) => {
+        let s = styles.chip;
+        let t = styles.chipText;
+        if (answered) {
+          if (i === correctIndex)   { s = [styles.chip, styles.chipCorrect]; t = [styles.chipText, styles.chipTextCorrect]; }
+          else if (i === selected)  { s = [styles.chip, styles.chipWrong];   t = [styles.chipText, styles.chipTextWrong]; }
+          else                      { s = [styles.chip, styles.chipDimmed]; }
+        }
+        return (
+          <TouchableOpacity key={i} style={s} onPress={() => !answered && onPress(i)}
+            disabled={answered} activeOpacity={0.75}>
+            <Text style={t}>{opt}</Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
   );
 }
 
@@ -384,6 +493,16 @@ const styles = StyleSheet.create({
   },
   timerText: { ...FONTS.sm, fontWeight: '800' },
 
+  timerTrack: {
+    height: 4,
+    backgroundColor: COLORS.border,
+    overflow: 'hidden',
+  },
+  timerFill: {
+    height: '100%',
+    alignSelf: 'flex-end',
+  },
+
   // Scroll
   scroll: { padding: SPACING.lg },
 
@@ -409,7 +528,42 @@ const styles = StyleSheet.create({
   scoreText: { ...FONTS.sm, color: COLORS.primary, fontWeight: '700' },
   enonce: { ...FONTS.h3, color: COLORS.text, lineHeight: 28 },
 
-  // Options
+  // Phrase à compléter
+  phraseWrap: { marginTop: SPACING.md, paddingTop: SPACING.sm, borderTopWidth: 1, borderTopColor: COLORS.border },
+  phraseText: { ...FONTS.body, color: COLORS.text, lineHeight: 28 },
+  phraseBlank: { fontWeight: '900', textDecorationLine: 'underline', color: COLORS.primary },
+  phraseCorrection: { ...FONTS.sm, color: COLORS.success, marginTop: 6, fontWeight: '700' },
+
+  // Vrai / Faux
+  vfRow: { flexDirection: 'row', gap: SPACING.md, marginBottom: SPACING.lg },
+  vfBtn: {
+    flex: 1, borderRadius: RADIUS.lg, borderWidth: 2,
+    paddingVertical: 24, alignItems: 'center', gap: 6,
+  },
+  vfBtnVrai: { backgroundColor: '#18C25A', borderColor: '#12A04A' },
+  vfBtnFaux: { backgroundColor: '#E53535', borderColor: '#C02828' },
+  vfCorrect: { backgroundColor: COLORS.success, borderColor: COLORS.success },
+  vfWrong:   { backgroundColor: COLORS.danger,  borderColor: COLORS.danger },
+  vfDimmed:  { opacity: 0.35 },
+  vfIcon:    { fontSize: 28, color: '#FFFFFF' },
+  vfLabel:   { ...FONTS.h3, color: '#FFFFFF', fontWeight: '900', letterSpacing: 1 },
+
+  // Word chips (compléter)
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginBottom: SPACING.lg },
+  chip: {
+    flexBasis: '47%', flexGrow: 1,
+    backgroundColor: COLORS.white, borderRadius: RADIUS.md,
+    borderWidth: 2, borderColor: COLORS.border,
+    paddingVertical: 14, paddingHorizontal: SPACING.md, alignItems: 'center',
+  },
+  chipCorrect: { backgroundColor: '#E8FAF0', borderColor: COLORS.success },
+  chipWrong:   { backgroundColor: '#FDEAEA', borderColor: COLORS.danger },
+  chipDimmed:  { backgroundColor: COLORS.surface, borderColor: COLORS.border, opacity: 0.4 },
+  chipText:         { ...FONTS.body, color: COLORS.text, fontWeight: '700', textAlign: 'center' },
+  chipTextCorrect:  { color: COLORS.success },
+  chipTextWrong:    { color: COLORS.danger },
+
+  // Options QCM
   options: { gap: SPACING.sm, marginBottom: SPACING.lg },
 
   optBase: {

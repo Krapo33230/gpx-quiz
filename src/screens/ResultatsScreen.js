@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Animated,
   ScrollView,
-  StatusBar,
   TouchableOpacity,
   Alert,
 } from 'react-native';
@@ -18,6 +17,7 @@ import {
   saveScore, updateStreak, updateProgressionMatiere, getStreak,
   addDailyCount, addXP, calcXP, getXP, getLevelInfo, saveDailyScore, getWeeklyScores,
 } from '../utils/storage';
+import { checkPremiumEntitlement } from '../utils/purchases';
 
 const DAILY_LIMIT = 30;
 
@@ -29,6 +29,7 @@ const MODE_LABELS = {
   logique:  { label: '🧠 Logique',         color: '#7A2B6A' },
   securite: { label: '🚔 Sécurité',        color: '#7A4B1A' },
   francais: { label: '📝 Français',        color: '#1A6A7A' },
+  monde:    { label: '🌐 Monde',           color: '#1A6A3A' },
 };
 
 export default function ResultatsScreen({ navigation, route }) {
@@ -41,6 +42,7 @@ export default function ResultatsScreen({ navigation, route }) {
     totalCorrect: 0,
     totalQuestions: 0,
     bestScore: 0,
+    bestTotal: 0,
   });
   const [streak,       setStreak]      = useState(0);
   const [bestStreak,   setBestStreak]  = useState(0);
@@ -71,8 +73,9 @@ export default function ResultatsScreen({ navigation, route }) {
     const xpBefore    = await getXP();
     const levelBefore = getLevelInfo(xpBefore).level;
 
-    const [dailyTotal] = await Promise.all([
+    const [dailyTotal, isPremium] = await Promise.all([
       addDailyCount(total),
+      checkPremiumEntitlement(),
       saveScore({ score, total, mode: modeId }),
       updateStreak(),
       details?.length ? updateProgressionMatiere(details) : Promise.resolve(),
@@ -91,7 +94,7 @@ export default function ResultatsScreen({ navigation, route }) {
         xpGained,
         totalXP: xpAfter,
       }), 500);
-    } else if (dailyTotal > DAILY_LIMIT) {
+    } else if (!isPremium && dailyTotal > DAILY_LIMIT) {
       setTimeout(() => navigation.navigate('Paywall'), 600);
     }
   }
@@ -124,8 +127,7 @@ export default function ResultatsScreen({ navigation, route }) {
           style: 'destructive',
           onPress: async () => {
             await clearAll();
-            setScores([]);
-            setStats({ sessions: 0, totalCorrect: 0, totalQuestions: 0, bestScore: 0 });
+            loadData();
           },
         },
       ],
@@ -141,8 +143,6 @@ export default function ResultatsScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-
       <Animated.View
         style={[
           styles.header,
@@ -160,7 +160,7 @@ export default function ResultatsScreen({ navigation, route }) {
         showsVerticalScrollIndicator={false}
       >
         {!hasData ? (
-          <EmptyState onStart={() => navigation.navigate('ChoixMode')} />
+          <EmptyState onStart={() => navigation.navigate('Main', { screen: 'ChoixMode' })} />
         ) : (
           <>
             {/* ── Stats globales ── */}
@@ -177,7 +177,11 @@ export default function ResultatsScreen({ navigation, route }) {
               </View>
               <View style={[styles.statsRow, { marginTop: SPACING.sm }]}>
                 <StatCard icon="✅" value={stats.totalCorrect}   label="Bonnes réponses" />
-                <StatCard icon="⭐" value={stats.bestScore}      label="Meilleur score" />
+                <StatCard
+                  icon="⭐"
+                  value={stats.bestTotal > 0 ? `${stats.bestScore}/${stats.bestTotal}` : '—'}
+                  label="Meilleur score"
+                />
               </View>
             </Animated.View>
 
@@ -209,7 +213,7 @@ export default function ResultatsScreen({ navigation, route }) {
                   { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
                 ]}
               >
-                <TouchableOpacity onPress={() => navigation.navigate('Niveaux')} style={styles.xpSeeAll}>
+                <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Niveaux' })} style={styles.xpSeeAll}>
                   <Text style={styles.xpSeeAllText}>Voir tous les grades →</Text>
                 </TouchableOpacity>
                 <View style={styles.xpHeader}>
@@ -220,15 +224,15 @@ export default function ResultatsScreen({ navigation, route }) {
                     </Text>
                     <Text style={styles.xpTotal}>{xpInfo.xp} XP</Text>
                   </View>
-                  {xpInfo.next && (
-                    <Text style={styles.xpNext}>→ {xpInfo.next.name} à {xpInfo.next.min} XP</Text>
-                  )}
                 </View>
                 {xpInfo.next && (
-                  <View style={styles.xpTrack}>
-                    <XPBar pct={xpInfo.pct} color={xpInfo.level.color} />
+                  <View style={styles.xpNextRow}>
+                    <Text style={styles.xpNext}>→ {xpInfo.next.name} à {xpInfo.next.min} XP</Text>
                     <Text style={styles.xpPct}>{xpInfo.pct}%</Text>
                   </View>
+                )}
+                {xpInfo.next && (
+                  <XPBar pct={xpInfo.pct} color={xpInfo.level.color} />
                 )}
               </Animated.View>
             )}
@@ -360,7 +364,6 @@ function XPBar({ pct, color }) {
 
 // ─── WeeklyChart ─────────────────────────────────────────────────────────────
 function WeeklyChart({ data }) {
-  const maxPct = Math.max(...data.map(d => d.pct ?? 0), 1);
   return (
     <View style={styles.weekChart}>
       {data.map((item, i) => {
@@ -517,16 +520,16 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     marginBottom: SPACING.md,
   },
-  xpHeader:    { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm },
+  xpHeader:    { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.xs },
   xpEmoji:     { fontSize: 36 },
   xpInfoCol:   { flex: 1 },
   xpLevelName: { ...FONTS.h3, fontWeight: '800' },
   xpTotal:     { ...FONTS.sm, color: COLORS.textSecondary },
-  xpNext:      { ...FONTS.xs, color: COLORS.textDisabled, textAlign: 'right', flex: 1 },
-  xpTrack:     { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  xpNextRow:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.xs },
+  xpNext:      { ...FONTS.xs, color: COLORS.textDisabled },
   xpBarTrack:  { flex: 1, height: 10, borderRadius: RADIUS.pill, backgroundColor: COLORS.border, overflow: 'hidden' },
   xpBarFill:   { height: '100%', borderRadius: RADIUS.pill },
-  xpPct:       { ...FONTS.xs, color: COLORS.textSecondary, width: 36, textAlign: 'right' },
+  xpPct:       { ...FONTS.xs, color: COLORS.textSecondary, fontWeight: '700' },
   xpSeeAll:    { alignSelf: 'flex-end', marginBottom: SPACING.sm },
   xpSeeAllText: { ...FONTS.xs, color: COLORS.primary, fontWeight: '700' },
 

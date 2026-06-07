@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
-  StatusBar, TouchableOpacity, Animated,
+  View, Text, StyleSheet, ScrollView, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -11,9 +10,15 @@ import { getXP, getLevelInfo, LEVELS } from '../utils/storage';
 export default function NiveauxScreen({ navigation }) {
   const [xpInfo, setXpInfo] = useState(null);
 
-  useEffect(() => {
+  function loadXP() {
     getXP().then(xp => setXpInfo(getLevelInfo(xp)));
-  }, []);
+  }
+
+  useEffect(() => {
+    loadXP();
+    const unsub = navigation.addListener('focus', loadXP);
+    return unsub;
+  }, [navigation]);
 
   if (!xpInfo) return null;
 
@@ -21,12 +26,8 @@ export default function NiveauxScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Retour</Text>
-        </TouchableOpacity>
-        <Text style={styles.titre}>Tes grades</Text>
+        <Text style={styles.titre}>Grades</Text>
         <Text style={styles.sousTitre}>{xpInfo.xp} XP au total</Text>
       </View>
 
@@ -95,7 +96,7 @@ function LevelCard({ level, next, pct, xp, isCurrent, isUnlocked, isLocked }) {
         styles.card,
         SHADOWS.card,
         {
-          backgroundColor: isLocked ? COLORS.surface : 'transparent',
+          backgroundColor: isLocked ? '#162034' : 'transparent',
           borderColor: border,
           transform: [{ scale: scaleAnim }],
           overflow: 'hidden',
@@ -158,12 +159,10 @@ function XPBar({ pct }) {
 }
 
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: COLORS.background },
+  safe:   { flex: 1, backgroundColor: '#0E1829' },
   header: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.md },
-  backBtn:   { marginBottom: SPACING.sm },
-  backText:  { ...FONTS.body, color: COLORS.primary, fontWeight: '600' },
-  titre:     { ...FONTS.h1, color: COLORS.text },
-  sousTitre: { ...FONTS.sm, color: COLORS.textSecondary, marginTop: 2 },
+  titre:     { ...FONTS.h1, color: '#FFFFFF' },
+  sousTitre: { ...FONTS.sm, color: 'rgba(255,255,255,0.55)', marginTop: 2 },
 
   scroll: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.sm },
 

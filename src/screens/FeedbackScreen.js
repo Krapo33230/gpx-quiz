@@ -5,21 +5,24 @@ import {
   StyleSheet,
   Animated,
   ScrollView,
-  StatusBar,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
+import { TricolorMark } from '../components/ui';
 import { CATEGORIES } from '../data/questions';
-import { saveScore } from '../utils/storage';
+import { saveScore, calcXP } from '../utils/storage';
 
 export default function FeedbackScreen({ navigation, route }) {
   const { score, total, details, mode } = route.params;
   const pourcentage = Math.round((score / total) * 100);
+  const xpGained   = calcXP(score, total);
+  const maxCombo   = computeMaxCombo(details);
+  const totalTime  = computeTotalTime(details);
 
   // Sauvegarde dès l'arrivée sur cet écran
   useEffect(() => {
-    saveScore({ mode: mode.id, score, total });
+    saveScore({ mode: typeof mode === 'string' ? mode : mode.id, score, total });
   }, []);
 
   const fadeAnim  = useRef(new Animated.Value(0)).current;
@@ -34,27 +37,45 @@ export default function FeedbackScreen({ navigation, route }) {
     ]).start();
   }, []);
 
-  const { emoji, message, color } = getMotivation(pourcentage);
+  const { message, color } = getMotivation(pourcentage);
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
-
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Résumé du score ── */}
+        {/* ── Célébration style Duolingo ── */}
         <Animated.View
           style={[
             styles.scoreBanner,
             { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
           ]}
         >
-          <Text style={styles.scoreEmoji}>{emoji}</Text>
+          <Text style={styles.sessionTag}>SESSION TERMINÉE !</Text>
+          <TricolorMark size="lg" style={{ marginBottom: 12, marginTop: 4 }} />
           <Text style={styles.scorePct}>{pourcentage}%</Text>
           <Text style={styles.scoreRatio}>{score} / {total} bonnes réponses</Text>
           <Text style={[styles.scoreMessage, { color }]}>{message}</Text>
+
+          {/* Badges XP / Combo / Temps */}
+          <View style={styles.badgeRow}>
+            <View style={[styles.badge, styles.badgeXP]}>
+              <Text style={styles.badgeIcon}>⚡</Text>
+              <Text style={styles.badgeValue}>{xpGained}</Text>
+              <Text style={styles.badgeLabel}>XP</Text>
+            </View>
+            <View style={[styles.badge, styles.badgeCombo]}>
+              <Text style={styles.badgeIcon}>🔥</Text>
+              <Text style={styles.badgeValue}>x{maxCombo}</Text>
+              <Text style={styles.badgeLabel}>COMBO</Text>
+            </View>
+            <View style={[styles.badge, styles.badgeTime]}>
+              <Text style={styles.badgeIcon}>⏱</Text>
+              <Text style={styles.badgeValue}>{totalTime}</Text>
+              <Text style={styles.badgeLabel}>TEMPS</Text>
+            </View>
+          </View>
         </Animated.View>
 
         {/* ── Détails par question ── */}
@@ -84,7 +105,7 @@ export default function FeedbackScreen({ navigation, route }) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('ChoixMode')}
+            onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })}
             style={styles.newModeBtn}
             activeOpacity={0.85}
           >
@@ -100,7 +121,7 @@ export default function FeedbackScreen({ navigation, route }) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('Accueil')}
+            onPress={() => navigation.navigate('Main', { screen: 'Accueil' })}
             style={styles.homeBtn}
             activeOpacity={0.85}
           >
@@ -143,7 +164,7 @@ function QuestionReview({ detail, index }) {
         <Text style={[styles.reviewCat, { color: cat.color }]}>
           {cat.emoji} {cat.label}
         </Text>
-        <Text style={styles.reviewTime}>⏱ {timeSpent}s</Text>
+        <Text style={styles.reviewTime}>{chosen === -1 ? '⏱ —' : `⏱ ${timeSpent}s`}</Text>
       </View>
 
       {/* Énoncé */}
@@ -179,12 +200,28 @@ function QuestionReview({ detail, index }) {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+function computeMaxCombo(details) {
+  let max = 0, current = 0;
+  for (const d of details) {
+    if (d.correct) { current++; max = Math.max(max, current); }
+    else { current = 0; }
+  }
+  return max;
+}
+
+function computeTotalTime(details) {
+  const secs = details.reduce((sum, d) => sum + (d.timeSpent || 0), 0);
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}s`;
+}
+
 function getMotivation(pct) {
-  if (pct >= 90) return { emoji: '🏆', message: 'Excellent ! Vous êtes prêt(e) !',       color: COLORS.success };
-  if (pct >= 75) return { emoji: '⭐', message: 'Très bien ! Continuez comme ça !',       color: COLORS.success };
-  if (pct >= 60) return { emoji: '👍', message: 'Bien ! Encore un peu d\'entraînement.', color: COLORS.warning };
-  if (pct >= 40) return { emoji: '📚', message: 'Courage ! Révisez les points faibles.', color: COLORS.warning };
-  return           { emoji: '💪', message: 'Ne lâchez pas ! La pratique paie.',           color: COLORS.danger };
+  if (pct >= 90) return { message: 'Excellent ! Tu es prêt(e) !',          color: COLORS.success };
+  if (pct >= 75) return { message: 'Très bien ! Continue comme ça !',       color: COLORS.success };
+  if (pct >= 60) return { message: 'Bien ! Encore un peu d\'entraînement.', color: COLORS.warning };
+  if (pct >= 40) return { message: 'Courage ! Révise les points faibles.',  color: COLORS.warning };
+  return           { message: 'Ne lâche pas ! La pratique paie.',            color: COLORS.danger };
 }
 
 const styles = StyleSheet.create({
@@ -192,22 +229,49 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg },
 
   scoreBanner: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.primary,
     borderRadius: RADIUS.xl,
     padding: SPACING.xl,
     alignItems: 'center',
     marginBottom: SPACING.xl,
     ...SHADOWS.card,
   },
-  scoreEmoji: { fontSize: 56, marginBottom: SPACING.sm },
+  sessionTag: {
+    ...FONTS.xs,
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '800',
+    letterSpacing: 1.5,
+    marginBottom: SPACING.sm,
+  },
+  mascot: { fontSize: 72, marginBottom: SPACING.sm },
   scorePct: {
-    fontSize: 52,
+    fontSize: 64,
     fontWeight: '900',
-    color: COLORS.primary,
+    color: COLORS.white,
     letterSpacing: -2,
   },
-  scoreRatio: { ...FONTS.body, color: COLORS.textSecondary, marginTop: 4 },
-  scoreMessage: { ...FONTS.h3, marginTop: SPACING.md, textAlign: 'center' },
+  scoreRatio: { ...FONTS.body, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
+  scoreMessage: { ...FONTS.h3, marginTop: SPACING.md, textAlign: 'center', color: COLORS.white },
+
+  badgeRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    marginTop: SPACING.lg,
+    width: '100%',
+  },
+  badge: {
+    flex: 1,
+    borderRadius: RADIUS.lg,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+    gap: 2,
+  },
+  badgeXP:    { backgroundColor: '#FFF3CD', borderWidth: 2, borderColor: '#F5C518' },
+  badgeCombo: { backgroundColor: '#FFE8D6', borderWidth: 2, borderColor: '#FF6B35' },
+  badgeTime:  { backgroundColor: '#D6F5E3', borderWidth: 2, borderColor: '#2B9E5B' },
+  badgeIcon:  { fontSize: 22 },
+  badgeValue: { fontSize: 20, fontWeight: '900', color: COLORS.text },
+  badgeLabel: { ...FONTS.xs, color: COLORS.textSecondary, fontWeight: '700', letterSpacing: 0.5 },
 
   sectionTitle: {
     ...FONTS.h2,

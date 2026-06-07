@@ -5,7 +5,6 @@ import {
   StyleSheet,
   Animated,
   ScrollView,
-  StatusBar,
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -66,6 +65,8 @@ export default function AutoEvalScreen({ navigation }) {
     const isCorrect = optIndex === q.correctIndex;
     const newAnswers = [...answers, { categorie: q.categorie, correct: isCorrect }];
 
+    setAnswers(newAnswers);
+
     setTimeout(() => {
       if (index + 1 < questions.length) {
         setIndex(i => i + 1);
@@ -77,12 +78,9 @@ export default function AutoEvalScreen({ navigation }) {
           Animated.spring(slideAnim, { toValue: 0, friction: 8,   useNativeDriver: true }),
         ]).start();
       } else {
-        setAnswers(newAnswers);
         setPhase('results');
       }
     }, 900);
-
-    setAnswers(newAnswers);
   }
 
   if (phase === 'results') {
@@ -94,7 +92,6 @@ export default function AutoEvalScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
       {/* ── Header ── */}
       <View style={styles.header}>
@@ -205,9 +202,8 @@ function ResultsPhase({ answers, navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('Accueil')} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Accueil' })} style={styles.backBtn}>
           <Text style={styles.backText}>← Accueil</Text>
         </TouchableOpacity>
       </View>
@@ -276,7 +272,7 @@ function ResultsPhase({ answers, navigation }) {
           {/* ── Secondaire ── */}
           <TouchableOpacity
             style={styles.freeBtn}
-            onPress={() => navigation.navigate('ChoixMode')}
+            onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })}
           >
             <Text style={styles.freeBtnText}>Choisir une autre matière</Text>
           </TouchableOpacity>

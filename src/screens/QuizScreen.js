@@ -15,13 +15,13 @@ import { CATEGORIES, getRandomQuestions } from '../data/questions';
 import { recordAnswer } from '../utils/storage';
 
 const MODE_COUNT = { flash: 5, complet: 20 };
-const TIMER_SECONDS = 30;
 
 export default function QuizScreen({ navigation, route }) {
   // ChoixModeScreen passe un objet mode complet {id, categorie?, ...}
   const rawMode   = route.params?.mode ?? {};
   const modeId    = typeof rawMode === 'string' ? rawMode : (rawMode.id ?? 'libre');
   const categorie = route.params?.categorie ?? rawMode.categorie ?? null;
+  const TIMER_SECONDS = rawMode.timerSeconds ?? 30;
 
   // ─── State ────────────────────────────────────────────────────────────────────
   const [questions] = useState(() =>
@@ -223,7 +223,7 @@ export default function QuizScreen({ navigation, route }) {
           <View style={styles.cardTop}>
             <CategoryBadge label={cat.label} emoji={cat.emoji} color={cat.color} />
             <View style={styles.scorePill}>
-              <Text style={styles.scoreText}>⭐ {score}/{questions.length}</Text>
+              <Text style={styles.scoreText}>✅ {score}/{questions.length}</Text>
             </View>
           </View>
 
@@ -494,13 +494,14 @@ const styles = StyleSheet.create({
   timerText: { ...FONTS.sm, fontWeight: '800' },
 
   timerTrack: {
-    height: 4,
+    height: 3,
     backgroundColor: COLORS.border,
     overflow: 'hidden',
   },
   timerFill: {
+    position: 'absolute',
+    right: 0,
     height: '100%',
-    alignSelf: 'flex-end',
   },
 
   // Scroll
@@ -552,12 +553,12 @@ const styles = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginBottom: SPACING.lg },
   chip: {
     flexBasis: '47%', flexGrow: 1,
-    backgroundColor: COLORS.white, borderRadius: RADIUS.md,
+    backgroundColor: COLORS.surface, borderRadius: RADIUS.md,
     borderWidth: 2, borderColor: COLORS.border,
     paddingVertical: 14, paddingHorizontal: SPACING.md, alignItems: 'center',
   },
-  chipCorrect: { backgroundColor: '#E8FAF0', borderColor: COLORS.success },
-  chipWrong:   { backgroundColor: '#FDEAEA', borderColor: COLORS.danger },
+  chipCorrect: { backgroundColor: '#1A3828', borderColor: COLORS.success },
+  chipWrong:   { backgroundColor: '#3A1820', borderColor: COLORS.danger },
   chipDimmed:  { backgroundColor: COLORS.surface, borderColor: COLORS.border, opacity: 0.4 },
   chipText:         { ...FONTS.body, color: COLORS.text, fontWeight: '700', textAlign: 'center' },
   chipTextCorrect:  { color: COLORS.success },
@@ -575,8 +576,8 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   optDefault: { backgroundColor: COLORS.white,   borderColor: COLORS.border },
-  optCorrect: { backgroundColor: '#E8FAF0',       borderColor: COLORS.success },
-  optWrong:   { backgroundColor: '#FDEAEA',       borderColor: COLORS.danger },
+  optCorrect: { backgroundColor: '#1A3828',       borderColor: COLORS.success },
+  optWrong:   { backgroundColor: '#3A1820',       borderColor: COLORS.danger },
   optDimmed:  { backgroundColor: COLORS.surface,  borderColor: COLORS.border, opacity: 0.5 },
 
   letterBadge: {
@@ -609,11 +610,11 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   explainCorrect: {
-    backgroundColor: '#E8FAF0',
+    backgroundColor: '#1A3828',
     borderLeftColor: COLORS.success,
   },
   explainWrong: {
-    backgroundColor: '#FDEAEA',
+    backgroundColor: '#3A1820',
     borderLeftColor: COLORS.danger,
   },
   explainTitle: {

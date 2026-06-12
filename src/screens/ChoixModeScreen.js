@@ -125,19 +125,21 @@ export default function ChoixModeScreen({ navigation }) {
         <Text style={styles.sousTitre}>Sélectionnez une matière ou un mode général</Text>
       </Animated.View>
 
-      {/* ── Cartes de mode ── */}
+      {/* ── Grille de modes ── */}
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {MODES.map((mode, index) => (
-          <ModeCard
-            key={mode.id}
-            mode={mode}
-            index={index}
-            onPress={() => handleSelectMode(mode)}
-          />
-        ))}
+        <View style={styles.grid}>
+          {MODES.map((mode, index) => (
+            <ModeCard
+              key={mode.id}
+              mode={mode}
+              index={index}
+              onPress={() => handleSelectMode(mode)}
+            />
+          ))}
+        </View>
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
     </SafeAreaView>
@@ -145,58 +147,31 @@ export default function ChoixModeScreen({ navigation }) {
 }
 
 function ModeCard({ mode, index, onPress }) {
-  const scale     = useRef(new Animated.Value(1)).current;
-  const fadeAnim  = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(20)).current;
+  const scale    = useRef(new Animated.Value(1)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const delay = index * 60;
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1, duration: 350, delay, useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0, delay, friction: 8, useNativeDriver: true,
-      }),
-    ]).start();
+    Animated.timing(fadeAnim, {
+      toValue: 1, duration: 300, delay: index * 50, useNativeDriver: true,
+    }).start();
   }, []);
 
-  const onPressIn  = () => Animated.spring(scale, { toValue: 0.97, useNativeDriver: true }).start();
+  const onPressIn  = () => Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
   const onPressOut = () => Animated.spring(scale, { toValue: 1,    useNativeDriver: true }).start();
 
   return (
-    <Animated.View
-      style={[
-        styles.cardWrapper,
-        {
-          opacity: fadeAnim,
-          transform: [{ scale }, { translateY: slideAnim }],
-        },
-      ]}
-    >
+    <Animated.View style={[styles.cardWrapper, { opacity: fadeAnim, transform: [{ scale }] }]}>
       <TouchableOpacity
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         activeOpacity={0.9}
-        style={[styles.card, { backgroundColor: mode.bg }, SHADOWS.card]}
+        style={styles.card}
       >
-        {/* Barre colorée à gauche */}
-        <View style={[styles.accentBar, { backgroundColor: mode.couleur }]} />
-
-        <View style={styles.cardEmoji}>
+        <View style={[styles.cardIconBox, { backgroundColor: mode.couleur + '22' }]}>
           <Text style={styles.emoji}>{mode.emoji}</Text>
         </View>
-
-        <View style={styles.cardContent}>
-          <Text style={[styles.cardTitre, { color: mode.couleur }]}>{mode.titre}</Text>
-          <Text style={styles.cardDesc}>{mode.description}</Text>
-          <View style={styles.cardMeta}>
-            <Text style={styles.cardDuree}>⏱ {mode.duree}</Text>
-          </View>
-        </View>
-
-        <Text style={[styles.arrow, { color: mode.couleur }]}>›</Text>
+        <Text style={styles.cardTitre} numberOfLines={2}>{mode.titre}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -214,40 +189,32 @@ const styles = StyleSheet.create({
   sousTitre: { ...FONTS.sm, color: 'rgba(255,255,255,0.55)' },
 
   scroll: {
-    paddingHorizontal: SPACING.lg,
+    paddingHorizontal: SPACING.md,
     paddingTop: SPACING.sm,
   },
-
-  cardWrapper: { marginBottom: SPACING.sm },
-  card: {
+  grid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
+  },
+  cardWrapper: { width: '48.5%' },
+  card: {
+    backgroundColor: '#162034',
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
-    paddingLeft: 0,
-    overflow: 'hidden',
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: '#1E2F48',
+    height: 120,
   },
-  accentBar: {
-    width: 5,
-    alignSelf: 'stretch',
-    borderRadius: RADIUS.pill,
-    marginRight: SPACING.md,
-    marginLeft: SPACING.xs,
-  },
-  cardEmoji: {
-    width: 48,
-    height: 48,
+  cardIconBox: {
+    width: 52, height: 52,
     borderRadius: RADIUS.md,
-    backgroundColor: 'rgba(255,255,255,0.7)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: SPACING.md,
+    marginBottom: SPACING.sm,
   },
-  emoji: { fontSize: 24 },
-  cardContent: { flex: 1 },
-  cardTitre: { ...FONTS.h3, marginBottom: 2 },
-  cardDesc: { ...FONTS.sm, color: COLORS.textSecondary, marginBottom: 4 },
-  cardMeta: { flexDirection: 'row' },
-  cardDuree:  { ...FONTS.xs, color: COLORS.textDisabled, fontWeight: '600' },
-  arrow: { fontSize: 28, fontWeight: '300', paddingHorizontal: SPACING.sm },
+  emoji: { fontSize: 26 },
+  cardTitre: { ...FONTS.sm, fontWeight: '800', color: '#FFFFFF', marginBottom: 4, lineHeight: 18 },
+  cardDuree: { ...FONTS.xs, color: 'rgba(255,255,255,0.4)', fontWeight: '600' },
 });

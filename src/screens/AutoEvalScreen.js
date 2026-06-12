@@ -32,7 +32,8 @@ function buildQuestions() {
   );
 }
 
-export default function AutoEvalScreen({ navigation }) {
+export default function AutoEvalScreen({ navigation, route }) {
+  const fromOnboarding = route?.params?.fromOnboarding ?? false;
   const [questions]   = useState(buildQuestions);
   const [index,        setIndex]        = useState(0);
   const [selected,     setSelected]     = useState(null);
@@ -84,7 +85,7 @@ export default function AutoEvalScreen({ navigation }) {
   }
 
   if (phase === 'results') {
-    return <ResultsPhase answers={answers} navigation={navigation} />;
+    return <ResultsPhase answers={answers} navigation={navigation} fromOnboarding={fromOnboarding} />;
   }
 
   const q = questions[index];
@@ -95,11 +96,20 @@ export default function AutoEvalScreen({ navigation }) {
 
       {/* ── Header ── */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Retour</Text>
-        </TouchableOpacity>
-        <Text style={styles.titre}>Auto-évaluation</Text>
-        <Text style={styles.counter}>{index + 1} / {total}</Text>
+        {fromOnboarding ? (
+          <View style={styles.onboardingHeaderRow}>
+            <Text style={styles.titre}>Diagnostic initial</Text>
+            <Text style={styles.counter}>{index + 1} / {total}</Text>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+              <Text style={styles.backText}>← Retour</Text>
+            </TouchableOpacity>
+            <Text style={styles.titre}>Auto-évaluation</Text>
+            <Text style={styles.counter}>{index + 1} / {total}</Text>
+          </>
+        )}
       </View>
 
       {/* ── Barre de progression ── */}
@@ -136,9 +146,9 @@ export default function AutoEvalScreen({ navigation }) {
 
               if (selected !== null) {
                 if (i === q.correctIndex) {
-                  bg = '#E8F8EF'; color = COLORS.success; border = COLORS.success;
+                  bg = '#1A3828'; color = COLORS.success; border = COLORS.success;
                 } else if (i === selected && i !== q.correctIndex) {
-                  bg = '#FEE8E8'; color = COLORS.danger;  border = COLORS.danger;
+                  bg = '#3A1820'; color = COLORS.danger;  border = COLORS.danger;
                 }
               }
 
@@ -168,7 +178,7 @@ export default function AutoEvalScreen({ navigation }) {
 }
 
 // ─── ResultsPhase ─────────────────────────────────────────────────────────────
-function ResultsPhase({ answers, navigation }) {
+function ResultsPhase({ answers, navigation, fromOnboarding }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -202,11 +212,13 @@ function ResultsPhase({ answers, navigation }) {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Accueil' })} style={styles.backBtn}>
-          <Text style={styles.backText}>← Accueil</Text>
-        </TouchableOpacity>
-      </View>
+      {!fromOnboarding && (
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Accueil' })} style={styles.backBtn}>
+            <Text style={styles.backText}>← Accueil</Text>
+          </TouchableOpacity>
+        </View>
+      )}
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Animated.View style={{ opacity: fadeAnim }}>
 
@@ -240,42 +252,61 @@ function ResultsPhase({ answers, navigation }) {
                       {correct}/{total}
                     </Text>
                   </View>
-                  <View style={styles.miniTrack}>
-                    <View style={[styles.miniFill, { width: `${pct}%`, backgroundColor: barColor }]} />
-                  </View>
                 </View>
                 {isWeak && <Text style={styles.weakTag}>À travailler</Text>}
               </View>
             );
           })}
 
-          {/* ── Recommandation ── */}
-          {scores[weakest].correct < NB_PAR_CAT && (
-            <View style={[styles.recoCard, SHADOWS.card]}>
-              <Text style={styles.recoTitle}>
-                Priorité : {CATEGORIES[weakest].emoji} {CATEGORIES[weakest].label}
-              </Text>
-              <Text style={styles.recoDesc}>
-                C'est ta matière la plus faible. On commence par là ?
-              </Text>
+          {/* ── Recommandation / CTA ── */}
+          {fromOnboarding ? (
+            <>
+              {scores[weakest].correct < NB_PAR_CAT && (
+                <View style={styles.recoInfo}>
+                  <Text style={styles.recoInfoTitle}>
+                    💡 Priorité : {CATEGORIES[weakest].emoji} {CATEGORIES[weakest].label}
+                  </Text>
+                  <Text style={styles.recoInfoDesc}>
+                    C'est ta matière la plus faible — on en tiendra compte dans ta préparation.
+                  </Text>
+                </View>
+              )}
               <TouchableOpacity
-                style={styles.recoBtn}
-                onPress={() => navigation.navigate('Quiz', { mode: CAT_TO_MODE[weakest] })}
+                style={styles.continueBtn}
+                onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })}
+                activeOpacity={0.85}
               >
-                <Text style={styles.recoBtnText}>
-                  S'entraîner en {CATEGORIES[weakest].label}
-                </Text>
+                <Text style={styles.continueBtnText}>Commencer ma préparation →</Text>
               </TouchableOpacity>
-            </View>
+            </>
+          ) : (
+            <>
+              {scores[weakest].correct < NB_PAR_CAT && (
+                <View style={[styles.recoCard, SHADOWS.card]}>
+                  <Text style={styles.recoTitle}>
+                    Priorité : {CATEGORIES[weakest].emoji} {CATEGORIES[weakest].label}
+                  </Text>
+                  <Text style={styles.recoDesc}>
+                    C'est ta matière la plus faible. On commence par là ?
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.recoBtn}
+                    onPress={() => navigation.navigate('Quiz', { mode: CAT_TO_MODE[weakest] })}
+                  >
+                    <Text style={styles.recoBtnText}>
+                      S'entraîner en {CATEGORIES[weakest].label}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              <TouchableOpacity
+                style={styles.freeBtn}
+                onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })}
+              >
+                <Text style={styles.freeBtnText}>Choisir une autre matière</Text>
+              </TouchableOpacity>
+            </>
           )}
-
-          {/* ── Secondaire ── */}
-          <TouchableOpacity
-            style={styles.freeBtn}
-            onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })}
-          >
-            <Text style={styles.freeBtnText}>Choisir une autre matière</Text>
-          </TouchableOpacity>
 
           <View style={{ height: SPACING.xxl }} />
         </Animated.View>
@@ -372,7 +403,7 @@ const styles = StyleSheet.create({
   catRowWeak: {
     borderWidth: 1.5,
     borderColor: COLORS.danger + '60',
-    backgroundColor: '#FEF5F5',
+    backgroundColor: '#2A1414',
   },
   catRowEmoji:   { fontSize: 22, width: 30 },
   catRowContent: { flex: 1 },
@@ -385,7 +416,7 @@ const styles = StyleSheet.create({
     ...FONTS.xs,
     color: COLORS.danger,
     fontWeight: '700',
-    backgroundColor: '#FEE8E8',
+    backgroundColor: '#3A1820',
     paddingHorizontal: SPACING.sm,
     paddingVertical: 2,
     borderRadius: RADIUS.sm,
@@ -417,4 +448,27 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
   },
   freeBtnText: { ...FONTS.body, color: COLORS.textSecondary, fontWeight: '600' },
+
+  onboardingHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+
+  recoInfo: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  recoInfoTitle: { ...FONTS.h3, color: COLORS.text, marginBottom: 4 },
+  recoInfoDesc:  { ...FONTS.sm, color: COLORS.textSecondary },
+
+  continueBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.pill,
+    paddingVertical: 18,
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+  },
+  continueBtnText: { ...FONTS.h3, color: COLORS.white, letterSpacing: 0.3 },
 });

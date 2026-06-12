@@ -11,44 +11,44 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { PrimaryButton, OutlineButton, TricolorMark } from '../components/ui';
 import {
-  getStats, getStreak, getProgressionMatiere,
-  getXP, getLevelInfo, getDailyCount, getWeeklyScores, getObjectif,
+  getStats, getStreak,
+  getXP, getLevelInfo, getDailyCount, getDailyTime, getWeeklyScores, getObjectif, getUserName,
 } from '../utils/storage';
-import { CATEGORIES } from '../data/questions';
 
-// Valeur par défaut — remplacée dynamiquement par getObjectif()
 const DAILY_GOAL_DEFAULT = 10;
-const MATIERES_ORDER = ['DROIT', 'CULTURE', 'LOGIQUE', 'SECURITE', 'FRANÇAIS', 'MONDE'];
 
 export default function AccueilScreen({ navigation }) {
-  const [stats,       setStats]       = useState({ sessions: 0, totalCorrect: 0, totalQuestions: 0 });
-  const [streak,      setStreak]      = useState(0);
-  const [progression, setProgression] = useState({});
-  const [xpInfo,      setXpInfo]      = useState(null);
-  const [dailyCount,  setDailyCount]  = useState(0);
-  const [dailyGoal,   setDailyGoal]   = useState(DAILY_GOAL_DEFAULT);
-  const [weekDays,    setWeekDays]    = useState([]);
+  const [stats,      setStats]      = useState({ sessions: 0, totalCorrect: 0, totalQuestions: 0 });
+  const [streak,     setStreak]     = useState(0);
+  const [xpInfo,     setXpInfo]     = useState(null);
+  const [dailyCount, setDailyCount] = useState(0);
+  const [dailyGoal,  setDailyGoal]  = useState(DAILY_GOAL_DEFAULT);
+  const [dailyTime,  setDailyTime]  = useState(0);
+  const [weekDays,   setWeekDays]   = useState([]);
+  const [userName,   setUserName]   = useState('');
 
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
   async function loadAll() {
-    const [s, sk, prog, xp, daily, weekly, goal] = await Promise.all([
+    const [s, sk, xp, daily, weekly, goal, name, time] = await Promise.all([
       getStats(),
       getStreak(),
-      getProgressionMatiere(),
       getXP(),
       getDailyCount(),
       getWeeklyScores(),
       getObjectif(),
+      getUserName(),
+      getDailyTime(),
     ]);
     setStats(s);
     setStreak(sk.currentStreak);
-    setProgression(prog);
     setXpInfo(getLevelInfo(xp));
     setDailyCount(daily);
     setDailyGoal(goal);
     setWeekDays(buildWeekRow(weekly));
+    setUserName(name);
+    setDailyTime(time);
   }
 
   useEffect(() => {
@@ -64,54 +64,53 @@ export default function AccueilScreen({ navigation }) {
     return unsub;
   }, [navigation]);
 
-  const questPct    = Math.min((dailyCount / dailyGoal) * 100, 100);
-  const questDone   = dailyCount >= dailyGoal;
-  const mascotMsg   = getMascotMessage(streak, dailyCount, stats.sessions);
+  const goalSeconds  = dailyGoal * 60;
+  const timePct      = Math.min((dailyTime / goalSeconds) * 100, 100);
+  const timeDone     = dailyTime >= goalSeconds;
+  const timeMinStr   = `${Math.floor(dailyTime / 60)} min`;
+  const mascotMsg    = getMascotMessage(streak, dailyCount, stats.sessions);
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* ── Barre de stats en haut (style Duolingo) ── */}
-        <Animated.View style={[styles.topBar, { opacity: fadeAnim }]}>
-          <View style={styles.topStat}>
-            <Text style={styles.topStatIcon}>🔥</Text>
-            <Text style={[styles.topStatValue, { color: '#E67E00' }]}>{streak}</Text>
+        {/* ── Header ── */}
+        <Animated.View style={[styles.topHeader, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+          <View style={styles.topHeaderLeft}>
+            <TricolorMark size="sm" />
+            <View style={styles.topHeaderText}>
+              <Text style={styles.helloText}>
+                Bonjour{userName ? `, ${userName}` : ''} 👋
+              </Text>
+              <Text style={styles.helloSub} numberOfLines={2}>{mascotMsg}</Text>
+            </View>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Niveaux')} style={styles.topStat}>
-            <Text style={styles.topStatIcon}>⚡</Text>
-            <Text style={[styles.topStatValue, { color: COLORS.accent }]}>{xpInfo?.xp ?? 0}</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Niveaux')} style={styles.xpChip}>
+            <Text style={styles.xpChipText}>⚡ {xpInfo?.xp ?? 0} XP</Text>
+            {xpInfo && <Text style={styles.xpChipLevel}>{xpInfo.level.emoji} {xpInfo.level.name}</Text>}
           </TouchableOpacity>
-          {xpInfo && (
-            <TouchableOpacity onPress={() => navigation.navigate('Niveaux')} style={styles.topStatBadge}>
-              <Text style={styles.topStatBadgeEmoji}>{xpInfo.level.emoji}</Text>
-              <Text style={[styles.topStatBadgeLabel, { color: xpInfo.level.color }]}>{xpInfo.level.name}</Text>
-            </TouchableOpacity>
-          )}
         </Animated.View>
 
-        {/* ── Mascotte + bulle ── */}
-        <Animated.View style={[styles.mascotSection, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.bubbleWrap}>
-            <View style={styles.bubble}>
-              <Text style={styles.bubbleText}>{mascotMsg}</Text>
-            </View>
-            <View style={styles.bubbleTip} />
-          </View>
-          <TricolorMark size="xl" style={{ marginBottom: 4 }} />
-        </Animated.View>
+        {/* ── Streak banner ── */}
+        {streak > 0 && (
+          <Animated.View style={[styles.streakBanner, { opacity: fadeAnim }]}>
+            <Text style={styles.streakBannerText}>
+              🔥 {streak} jour{streak > 1 ? 's' : ''} de suite — continue comme ça !
+            </Text>
+          </Animated.View>
+        )}
 
         {/* ── Quête du jour ── */}
         <Animated.View style={[styles.questCard, SHADOWS.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <View style={styles.questHeader}>
             <Text style={styles.questTag}>QUÊTE DU JOUR</Text>
-            {questDone && <Text style={styles.questDoneTag}>✓ COMPLÉTÉE</Text>}
+            {timeDone && <Text style={styles.questDoneTag}>✓ COMPLÉTÉE</Text>}
           </View>
-          <Text style={styles.questTitle}>Réponds à {dailyGoal} questions</Text>
+          <Text style={styles.questTitle}>🕐 Objectif : {dailyGoal} min / jour</Text>
           <View style={styles.questBarTrack}>
-            <View style={[styles.questBarFill, { width: `${questPct}%` }]} />
+            <View style={[styles.questBarFill, { width: `${timePct}%` }]} />
           </View>
-          <Text style={styles.questProgress}>{Math.min(dailyCount, dailyGoal)}/{dailyGoal}</Text>
+          <Text style={styles.questProgress}>{timeMinStr} / {dailyGoal} min</Text>
         </Animated.View>
 
         {/* ── Série — cercles des jours ── */}
@@ -138,7 +137,7 @@ export default function AccueilScreen({ navigation }) {
           </View>
         </Animated.View>
 
-        {/* ── Boutons principaux ── */}
+        {/* ── Boutons ── */}
         <Animated.View style={[styles.actions, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
           <PrimaryButton
             label="🚀  Commencer l'entraînement"
@@ -148,36 +147,6 @@ export default function AccueilScreen({ navigation }) {
             label="🎯  Faire mon auto-évaluation"
             onPress={() => navigation.navigate('AutoEval')}
           />
-          <OutlineButton
-            label="📖  Lexique police"
-            onPress={() => navigation.navigate('Lexique')}
-          />
-          {stats.sessions > 0 && (
-            <OutlineButton
-              label="📊  Voir mes résultats"
-              onPress={() => navigation.navigate('Resultats')}
-            />
-          )}
-        </Animated.View>
-
-        {/* ── Progression par matière ── */}
-        <Animated.View style={[styles.matieres, SHADOWS.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <Text style={styles.matieresTitre}>Progression par matière</Text>
-          {MATIERES_ORDER.map((key) => {
-            const cat = CATEGORIES[key];
-            if (!cat) return null;
-            const pct = progression[key] ?? 0;
-            return (
-              <MatiereBar
-                key={key}
-                emoji={cat.emoji}
-                label={cat.label}
-                color={cat.color}
-                pct={pct}
-                hasData={pct > 0}
-              />
-            );
-          })}
         </Animated.View>
 
         <Text style={styles.footer}>Prépare-toi avec confiance 💪</Text>
@@ -186,51 +155,14 @@ export default function AccueilScreen({ navigation }) {
   );
 }
 
-// ─── MatiereBar ───────────────────────────────────────────────────────────────
-function MatiereBar({ emoji, label, color, pct, hasData }) {
-  const anim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(anim, { toValue: pct / 100, duration: 700, useNativeDriver: false }).start();
-  }, [pct]);
-
-  const barColor =
-    pct >= 75 ? COLORS.success :
-    pct >= 50 ? COLORS.warning :
-    pct > 0   ? color :
-    COLORS.border;
-
-  return (
-    <View style={styles.matiereRow}>
-      <Text style={styles.matiereEmoji}>{emoji}</Text>
-      <View style={styles.matiereContent}>
-        <View style={styles.matiereHeader}>
-          <Text style={styles.matiereLabel}>{label}</Text>
-          <Text style={[styles.matierePct, { color: hasData ? barColor : COLORS.textDisabled }]}>
-            {hasData ? `${pct}%` : '—'}
-          </Text>
-        </View>
-        <View style={styles.barTrack}>
-          <Animated.View
-            style={[
-              styles.barFill,
-              { backgroundColor: barColor, width: anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) },
-            ]}
-          />
-        </View>
-      </View>
-    </View>
-  );
-}
-
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function getMascotMessage(streak, dailyCount, sessions) {
-  if (sessions === 0)    return "Bienvenue ! Commençons ta préparation au concours 👋";
-  if (dailyCount >= 10)  return "Quête du jour complétée ! Tu es en feu aujourd'hui 🔥";
-  if (streak >= 7)       return `${streak} jours de suite ! Tu es inarrêtable 🏆`;
-  if (streak >= 3)       return `Série de ${streak} jours ! Continue comme ça 💪`;
-  if (dailyCount > 0)    return "Bien parti ! Encore quelques questions pour finir ta quête.";
-  return "C'est l'heure de s'entraîner ! Bonne session 🎯";
+  if (sessions === 0)   return "Bienvenue ! Commençons ta préparation 👋";
+  if (dailyCount >= 10) return "Quête du jour complétée ! Tu es en feu 🔥";
+  if (streak >= 7)      return `${streak} jours de suite ! Inarrêtable 🏆`;
+  if (streak >= 3)      return `Série de ${streak} jours ! Continue 💪`;
+  if (dailyCount > 0)   return "Bien parti ! Encore quelques questions.";
+  return "C'est l'heure de s'entraîner ! 🎯";
 }
 
 function buildWeekRow(weeklyScores) {
@@ -246,51 +178,43 @@ const styles = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: '#0E1829' },
   scroll: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xxl },
 
-  // Top bar
-  topBar: {
+  topHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E2F48',
-    marginBottom: SPACING.lg,
+    paddingBottom: SPACING.md,
+    marginBottom: SPACING.sm,
+    gap: SPACING.sm,
   },
-  topStat: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  topStatIcon:  { fontSize: 20 },
-  topStatValue: { ...FONTS.h3, fontWeight: '900' },
-  topStatBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#162034', borderRadius: RADIUS.pill, paddingHorizontal: SPACING.sm, paddingVertical: 4, borderWidth: 1, borderColor: '#1E2F48' },
-  topStatBadgeEmoji: { fontSize: 16 },
-  topStatBadgeLabel: { ...FONTS.xs, fontWeight: '800' },
-
-  // Mascotte
-  mascotSection: {
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  bubbleWrap: { alignItems: 'center', marginBottom: 4 },
-  bubble: {
+  topHeaderLeft: { flexDirection: 'row', alignItems: 'flex-start', flex: 1, minWidth: 0 },
+  topHeaderText: { marginLeft: SPACING.sm, flex: 1, minWidth: 0 },
+  helloText:  { fontSize: 18, fontWeight: '800', color: '#FFFFFF' },
+  helloSub:   { ...FONTS.xs, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
+  xpChip: {
     backgroundColor: '#162034',
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    maxWidth: '90%',
+    borderRadius: RADIUS.pill,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 6,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#1E2F48',
-    ...SHADOWS.card,
+    flexShrink: 0,
   },
-  bubbleText: { ...FONTS.body, color: '#FFFFFF', textAlign: 'center', lineHeight: 22 },
-  bubbleTip: {
-    width: 0, height: 0,
-    borderLeftWidth: 8, borderRightWidth: 8, borderTopWidth: 10,
-    borderLeftColor: 'transparent', borderRightColor: 'transparent',
-    borderTopColor: '#1E2F48',
-    marginTop: -1,
-  },
-  mascot: { fontSize: 72 },
+  xpChipText:  { ...FONTS.xs, color: '#FFFFFF', fontWeight: '900' },
+  xpChipLevel: { ...FONTS.xs, color: 'rgba(255,255,255,0.5)', marginTop: 1 },
 
-  // Quête du jour
+  streakBanner: {
+    backgroundColor: '#1A2A0A',
+    borderRadius: RADIUS.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: '#2A4A0A',
+  },
+  streakBannerText: { ...FONTS.sm, color: '#7DDB3A', fontWeight: '700' },
+
   questCard: {
     backgroundColor: '#162034',
     borderRadius: RADIUS.lg,
@@ -299,75 +223,26 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#1E2F48',
   },
-  questHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  questTag:     { ...FONTS.xs, color: '#FFFFFF', fontWeight: '800', letterSpacing: 0.8 },
-  questDoneTag: { ...FONTS.xs, color: COLORS.success, fontWeight: '800', letterSpacing: 0.8 },
-  questTitle:   { ...FONTS.body, color: '#FFFFFF', fontWeight: '600', marginBottom: SPACING.sm },
-  questBarTrack: {
-    height: 12,
-    borderRadius: RADIUS.pill,
-    backgroundColor: '#1E2F48',
-    overflow: 'hidden',
-    marginBottom: 6,
-  },
-  questBarFill: {
-    height: '100%',
-    borderRadius: RADIUS.pill,
-    backgroundColor: '#FFFFFF',
-  },
+  questHeader:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  questTag:      { ...FONTS.xs, color: '#FFFFFF', fontWeight: '800', letterSpacing: 0.8 },
+  questDoneTag:  { ...FONTS.xs, color: COLORS.success, fontWeight: '800', letterSpacing: 0.8 },
+  questTitle:    { ...FONTS.body, color: '#FFFFFF', fontWeight: '600', marginBottom: SPACING.sm },
+  questBarTrack: { height: 12, borderRadius: RADIUS.pill, backgroundColor: '#1E2F48', overflow: 'hidden', marginBottom: 6 },
+  questBarFill:  { height: '100%', borderRadius: RADIUS.pill, backgroundColor: '#FFFFFF' },
   questProgress: { ...FONTS.xs, color: '#8A9BB5', fontWeight: '700', textAlign: 'right' },
 
-  // Semaine / streak
-  weekCard: {
-    backgroundColor: '#162034',
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.lg,
-    borderWidth: 1,
-    borderColor: '#1E2F48',
-  },
+  weekCard:   { backgroundColor: '#162034', borderRadius: RADIUS.lg, padding: SPACING.md, marginBottom: SPACING.lg, borderWidth: 1, borderColor: '#1E2F48' },
   weekHeader: { marginBottom: SPACING.sm },
   weekTitle:  { ...FONTS.h3, color: '#FFFFFF' },
   weekRow:    { flexDirection: 'row', justifyContent: 'space-between' },
   weekDayCol: { alignItems: 'center', gap: 4 },
-  weekDayLetter: { ...FONTS.xs, color: '#8A9BB5', fontWeight: '700' },
-  weekCircle: {
-    width: 36, height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1E2F48',
-    alignItems: 'center', justifyContent: 'center',
-  },
+  weekDayLetter:   { ...FONTS.xs, color: '#8A9BB5', fontWeight: '700' },
+  weekCircle:      { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1E2F48', alignItems: 'center', justifyContent: 'center' },
   weekCircleDone:  { backgroundColor: '#FFFFFF' },
   weekCircleToday: { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: '#0E1829' },
   weekCircleCheck: { color: '#0E1829', fontSize: 16, fontWeight: '900' },
   weekCircleDot:   { color: '#4A5A6E', fontSize: 20 },
 
-  // Boutons
   actions: { gap: SPACING.sm, marginBottom: SPACING.xl },
-
-  // Progression matières
-  matieres: {
-    backgroundColor: '#162034',
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    marginBottom: SPACING.lg,
-  },
-  matieresTitre: { ...FONTS.h3, color: '#FFFFFF', marginBottom: SPACING.md },
-  matiereRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1E2F48',
-    gap: SPACING.sm,
-  },
-  matiereEmoji:   { fontSize: 20, width: 28 },
-  matiereContent: { flex: 1 },
-  matiereHeader:  { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  matiereLabel:   { ...FONTS.sm, color: '#FFFFFF', flex: 1 },
-  matierePct:     { ...FONTS.sm, fontWeight: '700' },
-  barTrack: { height: 8, borderRadius: RADIUS.pill, backgroundColor: '#1E2F48', overflow: 'hidden' },
-  barFill:  { height: '100%', borderRadius: RADIUS.pill },
-
-  footer: { ...FONTS.sm, color: '#4A5A6E', textAlign: 'center', marginTop: SPACING.md },
+  footer:  { ...FONTS.sm, color: '#4A5A6E', textAlign: 'center', marginTop: SPACING.md },
 });

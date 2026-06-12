@@ -1,21 +1,21 @@
 // ─── Palette principale ────────────────────────────────────────────────────────
 export const COLORS = {
-  primary:       '#1A3F7A',   // Bleu police nationale
-  primaryLight:  '#2B5BA8',   // Bleu hover
-  primaryDark:   '#102850',   // Bleu foncé
-  accent:        '#F5C518',   // Jaune accent (étoiles, victoire)
-  success:       '#3DBE6E',   // Vert bonne réponse
-  danger:        '#E84040',   // Rouge mauvaise réponse
-  warning:       '#F09E1A',   // Orange
-  background:    '#FFFFFF',   // Fond blanc
-  surface:       '#F4F6FB',   // Fond carte
-  surfaceAlt:    '#EDF0F7',   // Fond alternatif
-  border:        '#D8DEEA',   // Bordure
-  text:          '#0F1A2E',   // Texte principal
-  textSecondary: '#5A6A85',   // Texte secondaire
-  textDisabled:  '#A4B0C5',   // Texte désactivé
+  primary:       '#4A85E8',   // Bleu lisible sur fond dark
+  primaryLight:  '#6B9FF0',
+  primaryDark:   '#2B5BA8',
+  accent:        '#F5C518',   // Jaune accent
+  success:       '#3DBE6E',
+  danger:        '#E84040',
+  warning:       '#F09E1A',
+  background:    '#0A1628',   // Fond sombre
+  surface:       '#162034',   // Fond carte
+  surfaceAlt:    '#1A2E4A',   // Fond alternatif
+  border:        '#1E3A5A',   // Bordure
+  text:          '#FFFFFF',
+  textSecondary: 'rgba(255,255,255,0.55)',
+  textDisabled:  'rgba(255,255,255,0.3)',
   white:         '#FFFFFF',
-  overlay:       'rgba(10, 20, 50, 0.45)',
+  overlay:       'rgba(0, 0, 0, 0.6)',
 };
 
 // ─── Typographie ───────────────────────────────────────────────────────────────

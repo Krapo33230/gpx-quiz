@@ -1,0 +1,15 @@
+export const KEYS = {
+  SCORES:        'gdp_scores',
+  PROGRESS:      'gdp_progress',
+  STATS:         'gdp_stats',
+  STREAK:        'gdp_streak',
+  PROG_MATIERE:  'gdp_prog_matiere',
+  DAILY:         'gdp_daily',
+  DAILY_TIME:    'gdp_daily_time',
+  XP:            'gdp_xp',
+  DAILY_SCORES:  'gdp_daily_scores',
+  ONBOARDING:    'gdp_onboarding',
+  USER_NAME:     'gdp_user_name',
+  USER_AGE:      'gdp_user_age',
+  OBJECTIF:      'gdp_objectif',
+};

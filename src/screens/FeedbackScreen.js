@@ -41,96 +41,74 @@ export default function FeedbackScreen({ navigation, route }) {
 
   return (
     <SafeAreaView style={styles.safe}>
+
+      {/* ── Score banner (toujours visible) ── */}
+      <Animated.View
+        style={[styles.scoreBanner, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}
+      >
+        <Text style={styles.sessionTag}>SESSION TERMINÉE !</Text>
+        <TricolorMark size="lg" style={{ marginBottom: 12, marginTop: 4 }} />
+        <Text style={styles.scorePct}>{pourcentage}%</Text>
+        <Text style={styles.scoreRatio}>{score} / {total} bonnes réponses</Text>
+        <Text style={[styles.scoreMessage, { color }]}>{message}</Text>
+        <View style={styles.badgeRow}>
+          <View style={[styles.badge, styles.badgeXP]}>
+            <Text style={styles.badgeIcon}>⚡</Text>
+            <Text style={styles.badgeValue}>{xpGained}</Text>
+            <Text style={styles.badgeLabel}>XP</Text>
+          </View>
+          <View style={[styles.badge, styles.badgeCombo]}>
+            <Text style={styles.badgeIcon}>🔥</Text>
+            <Text style={styles.badgeValue}>x{maxCombo}</Text>
+            <Text style={styles.badgeLabel}>COMBO</Text>
+          </View>
+          <View style={[styles.badge, styles.badgeTime]}>
+            <Text style={styles.badgeIcon}>⏱</Text>
+            <Text style={styles.badgeValue}>{totalTime}</Text>
+            <Text style={styles.badgeLabel}>TEMPS</Text>
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* ── Revue des questions (scrollable) ── */}
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Célébration style Duolingo ── */}
-        <Animated.View
-          style={[
-            styles.scoreBanner,
-            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-          ]}
-        >
-          <Text style={styles.sessionTag}>SESSION TERMINÉE !</Text>
-          <TricolorMark size="lg" style={{ marginBottom: 12, marginTop: 4 }} />
-          <Text style={styles.scorePct}>{pourcentage}%</Text>
-          <Text style={styles.scoreRatio}>{score} / {total} bonnes réponses</Text>
-          <Text style={[styles.scoreMessage, { color }]}>{message}</Text>
-
-          {/* Badges XP / Combo / Temps */}
-          <View style={styles.badgeRow}>
-            <View style={[styles.badge, styles.badgeXP]}>
-              <Text style={styles.badgeIcon}>⚡</Text>
-              <Text style={styles.badgeValue}>{xpGained}</Text>
-              <Text style={styles.badgeLabel}>XP</Text>
-            </View>
-            <View style={[styles.badge, styles.badgeCombo]}>
-              <Text style={styles.badgeIcon}>🔥</Text>
-              <Text style={styles.badgeValue}>x{maxCombo}</Text>
-              <Text style={styles.badgeLabel}>COMBO</Text>
-            </View>
-            <View style={[styles.badge, styles.badgeTime]}>
-              <Text style={styles.badgeIcon}>⏱</Text>
-              <Text style={styles.badgeValue}>{totalTime}</Text>
-              <Text style={styles.badgeLabel}>TEMPS</Text>
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* ── Détails par question ── */}
-        <Animated.View
-          style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
-        >
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
           <Text style={styles.sectionTitle}>Revue des questions</Text>
-
           {details.map((d, i) => (
             <QuestionReview key={d.question.id} detail={d} index={i} />
           ))}
         </Animated.View>
-
-        {/* ── Boutons d'action ── */}
-        <Animated.View
-          style={[
-            styles.actions,
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-          ]}
-        >
-          <TouchableOpacity
-            onPress={() => navigation.replace('Quiz', { mode })}
-            style={styles.retryBtn}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.retryText}>🔄  Rejouer ce mode</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })}
-            style={styles.newModeBtn}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.newModeText}>🎯  Changer de mode</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Resultats')}
-            style={styles.statsBtn}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.statsText}>📊  Voir mes statistiques</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Main', { screen: 'Accueil' })}
-            style={styles.homeBtn}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.homeText}>🏠  Retour à l'accueil</Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        <View style={{ height: SPACING.xxl }} />
+        <View style={{ height: SPACING.lg }} />
       </ScrollView>
+
+      {/* ── Boutons fixes en bas (toujours visibles) ── */}
+      <Animated.View style={[styles.footer, { opacity: fadeAnim }]}>
+        <TouchableOpacity
+          onPress={() => navigation.replace('Quiz', { mode })}
+          style={styles.retryBtn}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.retryText}>🔄  Rejouer</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main', params: { screen: 'ChoixMode' } }] })}
+          style={styles.newModeBtn}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.newModeText}>🎯  Autre mode</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })}
+          style={styles.homeBtn}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.homeText}>🏠  Accueil</Text>
+        </TouchableOpacity>
+      </Animated.View>
+
     </SafeAreaView>
   );
 }
@@ -226,14 +204,12 @@ function getMotivation(pct) {
 
 const styles = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: COLORS.background },
-  scroll: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.lg },
+  scroll: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md },
 
   scoreBanner: {
     backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.xl,
-    padding: SPACING.xl,
+    padding: SPACING.lg,
     alignItems: 'center',
-    marginBottom: SPACING.xl,
     ...SHADOWS.card,
   },
   sessionTag: {
@@ -266,9 +242,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 2,
   },
-  badgeXP:    { backgroundColor: '#FFF3CD', borderWidth: 2, borderColor: '#F5C518' },
-  badgeCombo: { backgroundColor: '#FFE8D6', borderWidth: 2, borderColor: '#FF6B35' },
-  badgeTime:  { backgroundColor: '#D6F5E3', borderWidth: 2, borderColor: '#2B9E5B' },
+  badgeXP:    { backgroundColor: '#2A2200', borderWidth: 2, borderColor: '#F5C518' },
+  badgeCombo: { backgroundColor: '#2A1800', borderWidth: 2, borderColor: '#FF6B35' },
+  badgeTime:  { backgroundColor: '#1A3828', borderWidth: 2, borderColor: '#2B9E5B' },
   badgeIcon:  { fontSize: 22 },
   badgeValue: { fontSize: 20, fontWeight: '900', color: COLORS.text },
   badgeLabel: { ...FONTS.xs, color: COLORS.textSecondary, fontWeight: '700', letterSpacing: 0.5 },
@@ -285,8 +261,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
     borderWidth: 2,
   },
-  reviewCorrect: { backgroundColor: '#F0FBF4', borderColor: COLORS.success },
-  reviewWrong:   { backgroundColor: '#FDF2F2', borderColor: COLORS.danger },
+  reviewCorrect: { backgroundColor: '#1A3828', borderColor: COLORS.success },
+  reviewWrong:   { backgroundColor: '#3A1820', borderColor: COLORS.danger },
 
   reviewHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: SPACING.sm },
   reviewIcon:   { fontSize: 18, fontWeight: '900', marginRight: SPACING.sm },
@@ -297,8 +273,8 @@ const styles = StyleSheet.create({
 
   reviewOpt:     { borderRadius: RADIUS.sm, padding: SPACING.sm, marginBottom: 4 },
   reviewOptDefault:  { backgroundColor: 'transparent' },
-  reviewOptCorrect:  { backgroundColor: '#D6F5E3' },
-  reviewOptWrong:    { backgroundColor: '#FAD7D7' },
+  reviewOptCorrect:  { backgroundColor: '#1A3828' },
+  reviewOptWrong:    { backgroundColor: '#3A1820' },
 
   reviewOptText:        { ...FONTS.sm },
   reviewOptTextDefault: { color: COLORS.textDisabled },
@@ -306,7 +282,7 @@ const styles = StyleSheet.create({
   reviewOptTextWrong:   { color: COLORS.danger,  fontWeight: '700' },
 
   explicationWrap: {
-    backgroundColor: 'rgba(26,63,122,0.06)',
+    backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: RADIUS.md,
     padding: SPACING.sm,
     marginTop: SPACING.sm,
@@ -314,35 +290,42 @@ const styles = StyleSheet.create({
   explicationLabel: { ...FONTS.xs, color: COLORS.primary, fontWeight: '700', marginBottom: 4 },
   explicationText:  { ...FONTS.sm, color: COLORS.text, lineHeight: 20 },
 
-  actions: { gap: SPACING.sm, marginTop: SPACING.lg },
-  retryBtn:   {
+  footer: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    backgroundColor: COLORS.background,
+  },
+  retryBtn: {
+    flex: 1,
     backgroundColor: COLORS.primary,
     borderRadius: RADIUS.pill,
-    padding: SPACING.md,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
     ...SHADOWS.button,
   },
   newModeBtn: {
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: RADIUS.pill,
-    padding: SPACING.md,
-    alignItems: 'center',
-  },
-  statsBtn: {
+    flex: 1,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.pill,
-    padding: SPACING.md,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: COLORS.border,
   },
   homeBtn: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.pill,
-    padding: SPACING.md,
+    paddingVertical: SPACING.md,
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
   },
-  retryText:   { ...FONTS.h3, color: COLORS.white },
-  newModeText: { ...FONTS.h3, color: COLORS.white },
-  statsText:   { ...FONTS.h3, color: COLORS.text },
-  homeText:    { ...FONTS.body, color: COLORS.textSecondary },
+  retryText:   { ...FONTS.sm, fontWeight: '800', color: COLORS.white },
+  newModeText: { ...FONTS.sm, fontWeight: '700', color: COLORS.text },
+  homeText:    { ...FONTS.sm, fontWeight: '700', color: COLORS.text },
 });

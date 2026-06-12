@@ -15,21 +15,22 @@ import { StatCard } from '../components/ui';
 import {
   getScores, getStats, clearAll,
   saveScore, updateStreak, updateProgressionMatiere, getStreak,
-  addDailyCount, addXP, calcXP, getXP, getLevelInfo, saveDailyScore, getWeeklyScores,
+  addDailyCount, addDailyTime, addXP, calcXP, getXP, getLevelInfo, saveDailyScore, getWeeklyScores, getObjectif,
 } from '../utils/storage';
 import { checkPremiumEntitlement } from '../utils/purchases';
 
-const DAILY_LIMIT = 30;
+// Limite dynamique : minutes × 2 questions/min (défaut 10 min = 20 questions)
+const DEFAULT_DAILY_LIMIT = 20;
 
 const MODE_LABELS = {
   flash:    { label: '⚡ Éclair',          color: '#F5C518' },
-  complet:  { label: '📋 Complet',         color: '#1A3F7A' },
-  droit:    { label: '⚖️ Droit',           color: '#1A3F7A' },
-  culture:  { label: '🌍 Culture G.',      color: '#2B7A5B' },
-  logique:  { label: '🧠 Logique',         color: '#7A2B6A' },
-  securite: { label: '🚔 Sécurité',        color: '#7A4B1A' },
-  francais: { label: '📝 Français',        color: '#1A6A7A' },
-  monde:    { label: '🌐 Monde',           color: '#1A6A3A' },
+  complet:  { label: '📋 Complet',         color: '#4A85E8' },
+  droit:    { label: '⚖️ Droit',           color: '#4A85E8' },
+  culture:  { label: '🌍 Culture G.',      color: '#3DBE8E' },
+  logique:  { label: '🧠 Logique',         color: '#C46FBB' },
+  securite: { label: '🚔 Sécurité',        color: '#E08C45' },
+  francais: { label: '📝 Français',        color: '#45B8C8' },
+  monde:    { label: '🌐 Monde',           color: '#45B870' },
 };
 
 export default function ResultatsScreen({ navigation, route }) {
@@ -69,11 +70,13 @@ export default function ResultatsScreen({ navigation, route }) {
     const pct      = total > 0 ? Math.round((score / total) * 100) : 0;
     const xpGained = calcXP(score, total);
 
+    const sessionSeconds = (details ?? []).reduce((sum, d) => sum + (d.timeSpent ?? 0), 0);
+
     // Niveau avant la session
     const xpBefore    = await getXP();
     const levelBefore = getLevelInfo(xpBefore).level;
 
-    const [dailyTotal, isPremium] = await Promise.all([
+    const [, isPremium, , , , , , userMinutes, dailySeconds] = await Promise.all([
       addDailyCount(total),
       checkPremiumEntitlement(),
       saveScore({ score, total, mode: modeId }),
@@ -81,7 +84,11 @@ export default function ResultatsScreen({ navigation, route }) {
       details?.length ? updateProgressionMatiere(details) : Promise.resolve(),
       addXP(xpGained),
       saveDailyScore(pct),
+      getObjectif(),
+      addDailyTime(sessionSeconds),
     ]);
+
+    const dailyLimit = (userMinutes ?? 10) * 60; // minutes → secondes
 
     const xpAfter    = await getXP();
     const levelAfter = getLevelInfo(xpAfter).level;
@@ -94,7 +101,7 @@ export default function ResultatsScreen({ navigation, route }) {
         xpGained,
         totalXP: xpAfter,
       }), 500);
-    } else if (!isPremium && dailyTotal > DAILY_LIMIT) {
+    } else if (!isPremium && dailySeconds > dailyLimit) {
       setTimeout(() => navigation.navigate('Paywall'), 600);
     }
   }
@@ -163,26 +170,52 @@ export default function ResultatsScreen({ navigation, route }) {
           <EmptyState onStart={() => navigation.navigate('Main', { screen: 'ChoixMode' })} />
         ) : (
           <>
-            {/* ── Stats globales ── */}
+            {/* ── Taux de réussite hero ── */}
             <Animated.View
-              style={[
-                styles.statsSection,
-                { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-              ]}
+              style={[styles.heroCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
             >
-              <Text style={styles.sectionTitle}>Vue d'ensemble</Text>
-              <View style={styles.statsRow}>
-                <StatCard icon="🎯" value={`${tauxReussite}%`} label="Taux de réussite" />
-                <StatCard icon="📚" value={stats.sessions}     label="Sessions" />
+              <Text style={styles.heroLabel}>TAUX DE RÉUSSITE GÉNÉRAL</Text>
+              <Text style={[styles.heroValue, { color: getGaugeColor(tauxReussite) }]}>
+                {tauxReussite} %
+              </Text>
+              <View style={styles.heroBar}>
+                <View style={[styles.heroBarFill, { width: `${tauxReussite}%`, backgroundColor: getGaugeColor(tauxReussite) }]} />
               </View>
-              <View style={[styles.statsRow, { marginTop: SPACING.sm }]}>
-                <StatCard icon="✅" value={stats.totalCorrect}   label="Bonnes réponses" />
-                <StatCard
-                  icon="⭐"
-                  value={stats.bestTotal > 0 ? `${stats.bestScore}/${stats.bestTotal}` : '—'}
-                  label="Meilleur score"
-                />
+              <View style={styles.heroMiniStats}>
+                <View style={styles.heroMiniItem}>
+                  <Text style={styles.heroMiniVal}>{stats.sessions}</Text>
+                  <Text style={styles.heroMiniLbl}>sessions</Text>
+                </View>
+                <View style={styles.heroMiniSep} />
+                <View style={styles.heroMiniItem}>
+                  <Text style={styles.heroMiniVal}>{stats.totalCorrect}</Text>
+                  <Text style={styles.heroMiniLbl}>bonnes réponses</Text>
+                </View>
+                <View style={styles.heroMiniSep} />
+                <View style={styles.heroMiniItem}>
+                  <Text style={styles.heroMiniVal}>
+                    {stats.bestTotal > 0 ? `${Math.round((stats.bestScore / stats.bestTotal) * 100)}%` : '—'}
+                  </Text>
+                  <Text style={styles.heroMiniLbl}>meilleur score</Text>
+                </View>
               </View>
+            </Animated.View>
+
+            {/* ── Tu peux le faire ── */}
+            <Animated.View
+              style={[styles.motivCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
+            >
+              <View style={styles.motivContent}>
+                <Text style={styles.motivTitle}>{getMotivPhrase(tauxReussite)}</Text>
+                <Text style={styles.motivSub}>Lance une nouvelle session maintenant →</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.motivBtn}
+                onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })}
+                activeOpacity={0.85}
+              >
+                <Text style={styles.motivBtnText}>→</Text>
+              </TouchableOpacity>
             </Animated.View>
 
             {/* ── Streak + Best streak ── */}
@@ -251,41 +284,13 @@ export default function ResultatsScreen({ navigation, route }) {
               </Animated.View>
             )}
 
-            {/* ── Jauge de progression ── */}
-            <Animated.View
-              style={[
-                styles.gaugeCard,
-                SHADOWS.card,
-                { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-              ]}
-            >
-              <Text style={styles.gaugeTitle}>Progression globale</Text>
-              <View style={styles.gaugeTrack}>
-                <GaugeBar value={tauxReussite} />
-              </View>
-              <View style={styles.gaugeLabels}>
-                <Text style={styles.gaugeLabel}>0%</Text>
-                <Text style={[styles.gaugePct, { color: getGaugeColor(tauxReussite) }]}>
-                  {tauxReussite}%
-                </Text>
-                <Text style={styles.gaugeLabel}>100%</Text>
-              </View>
-              <Text style={styles.concoursTip}>
-                {tauxReussite >= 75
-                  ? '🏆 Niveau concours atteint !'
-                  : tauxReussite >= 50
-                  ? '📈 En bonne progression, continuez !'
-                  : '📚 Entraînez-vous régulièrement.'}
-              </Text>
-            </Animated.View>
-
             {/* ── Historique ── */}
             {scores.length > 0 && (
               <Animated.View
                 style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
               >
-                <Text style={styles.sectionTitle}>Historique des sessions</Text>
-                {scores.slice(0, 15).map((s, i) => (
+                <Text style={styles.sectionTitle}>Dernières sessions</Text>
+                {scores.slice(0, 5).map((s, i) => (
                   <HistoryRow key={i} session={s} index={i} />
                 ))}
               </Animated.View>
@@ -305,42 +310,6 @@ export default function ResultatsScreen({ navigation, route }) {
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-// ─── GaugeBar ─────────────────────────────────────────────────────────────────
-function GaugeBar({ value }) {
-  const anim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(anim, {
-      toValue: value / 100,
-      duration: 800,
-      useNativeDriver: false,
-    }).start();
-  }, [value]);
-
-  const color = getGaugeColor(value);
-
-  return (
-    <View style={styles.gaugeBar}>
-      {/* Jalons */}
-      {[50, 75].map(mark => (
-        <View
-          key={mark}
-          style={[styles.gaugeMark, { left: `${mark}%` }]}
-        />
-      ))}
-      <Animated.View
-        style={[
-          styles.gaugeFill,
-          {
-            backgroundColor: color,
-            width: anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-          },
-        ]}
-      />
-    </View>
   );
 }
 
@@ -447,6 +416,19 @@ function getGaugeColor(pct) {
   return COLORS.danger;
 }
 
+const MOTIV_PHRASES = [
+  'Chaque question te rapproche du concours 🎯',
+  'Les champions s\'entraînent même quand ils n\'en ont pas envie 💪',
+  'La régularité fait la différence. Continue ! 🔥',
+  'Tu progresses à chaque session. Ne lâche rien ! 🚀',
+  'Le concours récompense ceux qui persévèrent 🏆',
+  'Une session de plus, une chance de plus de réussir ⚡',
+  'Chaque erreur est une leçon. Tu t\'améliores ! 📈',
+];
+function getMotivPhrase() {
+  return MOTIV_PHRASES[Math.floor(Math.random() * MOTIV_PHRASES.length)];
+}
+
 const styles = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: COLORS.background },
   header: {
@@ -462,37 +444,56 @@ const styles = StyleSheet.create({
 
   sectionTitle: { ...FONTS.h2, color: COLORS.text, marginBottom: SPACING.md, marginTop: SPACING.md },
 
-  statsSection: { marginBottom: SPACING.md },
-  statsRow: { flexDirection: 'row', gap: SPACING.sm },
+  // Hero taux de réussite
+  heroCard: {
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
+    marginBottom: SPACING.md,
+    ...SHADOWS.card,
+  },
+  heroLabel: {
+    fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.6)',
+    letterSpacing: 1.2, marginBottom: SPACING.xs,
+  },
+  heroValue: {
+    fontSize: 56, fontWeight: '900', letterSpacing: -2, marginBottom: SPACING.sm,
+  },
+  heroBar: {
+    height: 8, borderRadius: RADIUS.pill,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    overflow: 'hidden', marginBottom: SPACING.lg,
+  },
+  heroBarFill: { height: '100%', borderRadius: RADIUS.pill },
+  heroMiniStats: { flexDirection: 'row', alignItems: 'center' },
+  heroMiniItem:  { flex: 1, alignItems: 'center' },
+  heroMiniVal:   { fontSize: 18, fontWeight: '900', color: '#FFFFFF' },
+  heroMiniLbl:   { fontSize: 11, color: 'rgba(255,255,255,0.55)', marginTop: 2, fontWeight: '600' },
+  heroMiniSep:   { width: 1, height: 32, backgroundColor: 'rgba(255,255,255,0.15)' },
 
-  gaugeCard: {
+  // Carte motivationnelle
+  motivCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.md,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    ...SHADOWS.card,
   },
-  gaugeTitle: { ...FONTS.h3, color: COLORS.text, marginBottom: SPACING.md },
-  gaugeTrack: { marginBottom: SPACING.sm },
-  gaugeBar: {
-    height: 18,
-    borderRadius: RADIUS.pill,
-    backgroundColor: COLORS.border,
-    overflow: 'hidden',
-    position: 'relative',
+  motivContent: { flex: 1 },
+  motivTitle:   { ...FONTS.h3, color: COLORS.text, marginBottom: 4 },
+  motivSub:     { ...FONTS.sm, color: COLORS.textSecondary, lineHeight: 18 },
+  motivBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center', justifyContent: 'center',
+    marginLeft: SPACING.md,
+    ...SHADOWS.button,
   },
-  gaugeFill: { height: '100%', borderRadius: RADIUS.pill },
-  gaugeMark: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 2,
-    backgroundColor: 'rgba(255,255,255,0.6)',
-    zIndex: 1,
-  },
-  gaugeLabels: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  gaugeLabel:  { ...FONTS.xs, color: COLORS.textDisabled },
-  gaugePct:    { ...FONTS.h3, fontWeight: '900' },
-  concoursTip: { ...FONTS.sm, color: COLORS.textSecondary, marginTop: SPACING.sm, textAlign: 'center' },
+  motivBtnText: { fontSize: 20, color: '#FFFFFF', fontWeight: '700' },
 
   // Streak row
   streakRow: {

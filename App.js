@@ -13,7 +13,8 @@
  *           │   ├── AccueilScreen   (tab 1 – Accueil)
  *           │   ├── ChoixModeScreen (tab 2 – Apprendre)
  *           │   ├── NiveauxScreen   (tab 3 – Grades)
- *           │   └── PlusScreen      (tab 4 – Plus)
+ *           │   ├── InfoScreen      (tab 4 – Infos)
+ *           │   └── PlusScreen      (tab 5 – Plus)
  *           ├── QuizScreen
  *           ├── FeedbackScreen
  *           ├── ResultatsScreen
@@ -42,19 +43,33 @@ import QuizScreen      from './src/screens/QuizScreen';
 import FeedbackScreen  from './src/screens/FeedbackScreen';
 import ResultatsScreen from './src/screens/ResultatsScreen';
 import PaywallScreen   from './src/screens/PaywallScreen';
-import AutoEvalScreen  from './src/screens/AutoEvalScreen';
+import AutoEvalScreen      from './src/screens/AutoEvalScreen';
+import AutoEvalIntroScreen from './src/screens/AutoEvalIntroScreen';
 import NiveauxScreen   from './src/screens/NiveauxScreen';
 import LevelUpScreen   from './src/screens/LevelUpScreen';
 import LexiqueScreen   from './src/screens/LexiqueScreen';
-import WelcomeScreen   from './src/screens/WelcomeScreen';
+import WelcomeScreen    from './src/screens/WelcomeScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
-import PlusScreen      from './src/screens/PlusScreen';
+import DailyStartScreen from './src/screens/DailyStartScreen';
+import PlusScreen       from './src/screens/PlusScreen';
+import InfoScreen       from './src/screens/InfoScreen';
 
 // ─── Thème ───────────────────────────────────────────────────────────────────
 import { COLORS } from './src/theme/colors';
 
 const Stack = createStackNavigator();
 const Tab   = createBottomTabNavigator();
+
+const bottomSlideInterpolator = ({ current }) => ({
+  cardStyle: {
+    transform: [{
+      translateY: current.progress.interpolate({
+        inputRange:  [0, 1],
+        outputRange: [height, 0],
+      }),
+    }],
+  },
+});
 
 /**
  * Options par défaut du navigator.
@@ -143,6 +158,16 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
+        name="Infos"
+        component={InfoScreen}
+        options={{
+          tabBarLabel: 'Infos',
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 20, color }}>📋</Text>
+          ),
+        }}
+      />
+      <Tab.Screen
         name="Plus"
         component={PlusScreen}
         options={{
@@ -161,9 +186,7 @@ export default function App() {
 
   useEffect(() => {
     initPurchases();
-    // Force Welcome pour tester l'onboarding — remettre la ligne du dessous quand c'est validé
     setInitialRoute('Welcome');
-    // isOnboardingDone().then(done => setInitialRoute(done ? 'Main' : 'Welcome'));
   }, []);
 
   if (!initialRoute) return null; // attend la vérification AsyncStorage
@@ -179,6 +202,7 @@ export default function App() {
           {/* ── 0. Welcome / Onboarding ─────────────────────────── */}
           <Stack.Screen name="Welcome"    component={WelcomeScreen} />
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+          <Stack.Screen name="DailyStart" component={DailyStartScreen} />
 
           {/* ── 1. Main (bottom tabs) ───────────────────────────── */}
           <Stack.Screen name="Main" component={MainTabs} />
@@ -201,7 +225,13 @@ export default function App() {
             component={ResultatsScreen}
           />
 
-          {/* ── 5. Auto-évaluation ──────────────────────────────── */}
+          {/* ── 5. Intro auto-évaluation ────────────────────────── */}
+          <Stack.Screen
+            name="AutoEvalIntro"
+            component={AutoEvalIntroScreen}
+          />
+
+          {/* ── 5b. Auto-évaluation ─────────────────────────────── */}
           <Stack.Screen
             name="AutoEval"
             component={AutoEvalScreen}
@@ -214,16 +244,7 @@ export default function App() {
             options={{
               headerShown: false,
               cardStyle: { backgroundColor: '#FFF8E1' },
-              cardStyleInterpolator: ({ current }) => ({
-                cardStyle: {
-                  transform: [{
-                    translateY: current.progress.interpolate({
-                      inputRange:  [0, 1],
-                      outputRange: [height, 0],
-                    }),
-                  }],
-                },
-              }),
+              cardStyleInterpolator: bottomSlideInterpolator,
             }}
           />
 
@@ -243,18 +264,7 @@ export default function App() {
               cardOverlayEnabled: false,
               gestureEnabled: true,
               gestureDirection: 'vertical',
-              cardStyleInterpolator: ({ current }) => ({
-                cardStyle: {
-                  transform: [
-                    {
-                      translateY: current.progress.interpolate({
-                        inputRange:  [0, 1],
-                        outputRange: [height, 0],
-                      }),
-                    },
-                  ],
-                },
-              }),
+              cardStyleInterpolator: bottomSlideInterpolator,
             }}
           />
         </Stack.Navigator>

@@ -1,81 +1,75 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, Animated, StyleSheet, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default function SplashScreen() {
   const fade  = useRef(new Animated.Value(0)).current;
-  const scale = useRef(new Animated.Value(0.88)).current;
+  const scale = useRef(new Animated.Value(0.92)).current;
   const bar   = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fade, {
-        toValue: 1, duration: 400, useNativeDriver: true,
+        toValue: 1, duration: 350, useNativeDriver: true,
       }),
       Animated.spring(scale, {
-        toValue: 1, friction: 7, tension: 90, useNativeDriver: true,
+        toValue: 1, friction: 8, tension: 100, useNativeDriver: true,
       }),
       Animated.timing(bar, {
-        toValue: 1, duration: 1600, delay: 200, useNativeDriver: false,
+        toValue: 1, duration: 1500, delay: 150, useNativeDriver: false,
       }),
     ]).start();
   }, []);
 
   return (
     <View style={s.root}>
-      {/* Texture lignes fines EFFET-01 */}
-      <View style={s.texture} pointerEvents="none">
-        {Array.from({ length: 28 }).map((_, i) => (
-          <View key={i} style={[s.line, { top: i * 28 }]} />
-        ))}
+
+      {/* Bandes tricolores en fond — opacité douce */}
+      <View style={s.tricolorBg} pointerEvents="none">
+        <View style={[s.band, { backgroundColor: '#002395' }]} />
+        <View style={[s.band, { backgroundColor: '#F0F4FF' }]} />
+        <View style={[s.band, { backgroundColor: '#EF4135' }]} />
       </View>
+
+      {/* Overlay sombre pour garder le texte lisible */}
+      <View style={s.overlay} pointerEvents="none" />
 
       {/* Contenu centré */}
       <Animated.View style={[s.center, { opacity: fade, transform: [{ scale }] }]}>
 
         {/* Badge PN */}
         <View style={s.badge}>
-          <View style={s.badgeInner}>
-            <Text style={s.badgeStar}>✦  ✦  ✦</Text>
-            <Text style={s.badgePN}>PN</Text>
-            <Text style={s.badgeStar}>✦  ✦  ✦</Text>
-          </View>
+          <Text style={s.badgeTop}>✦  ✦  ✦</Text>
+          <Text style={s.badgePN}>PN</Text>
+          <Text style={s.badgeBottom}>✦  ✦  ✦</Text>
         </View>
 
-        {/* Séparateur gold */}
-        <LinearGradient
-          colors={['transparent', '#c9a84c', 'transparent']}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-          style={s.sep}
-        />
+        {/* Séparateur tricolore */}
+        <View style={s.triSep}>
+          <View style={[s.triBar, { backgroundColor: '#002395' }]} />
+          <View style={[s.triBar, { backgroundColor: '#F0F4FF' }]} />
+          <View style={[s.triBar, { backgroundColor: '#EF4135' }]} />
+        </View>
 
         <Text style={s.titleSm}>PRÉPARATION AU CONCOURS</Text>
         <Text style={s.titleLg}>GARDIEN DE LA PAIX</Text>
 
-        <LinearGradient
-          colors={['transparent', '#7a6030', 'transparent']}
-          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-          style={s.sepDim}
-        />
+        {/* Séparateur simple */}
+        <View style={s.simpleSep} />
 
         <Text style={s.subtitle}>Police Nationale · France</Text>
       </Animated.View>
 
-      {/* Barre de chargement */}
+      {/* Barre de chargement tricolore */}
       <View style={s.barTrack}>
-        <Animated.View
-          style={[s.barFill, {
-            width: bar.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-          }]}
-        />
-        {/* Glow à l'extrémité */}
-        <Animated.View
-          style={[s.barGlow, {
-            left: bar.interpolate({ inputRange: [0, 1], outputRange: ['0%', '97%'] }),
-          }]}
-        />
+        <Animated.View style={[s.barFill, {
+          width: bar.interpolate({ inputRange: [0, 0.33, 0.66, 1], outputRange: ['0%', '33%', '66%', '100%'] }),
+        }]}>
+          <View style={[s.barSegment, { backgroundColor: '#002395' }]} />
+          <View style={[s.barSegment, { backgroundColor: '#F0F4FF' }]} />
+          <View style={[s.barSegment, { backgroundColor: '#EF4135' }]} />
+        </Animated.View>
       </View>
 
       <Text style={s.version}>ConcoursPolice · v1.0</Text>
@@ -86,20 +80,23 @@ export default function SplashScreen() {
 const s = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#0a1628',
+    backgroundColor: '#001249',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  texture: {
+  tricolorBg: {
     ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
+    flexDirection: 'row',
   },
-  line: {
-    position: 'absolute',
-    left: 0, right: 0,
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.012)',
+  band: {
+    flex: 1,
+    opacity: 0.13,
+  },
+
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 10, 40, 0.55)',
   },
 
   center: {
@@ -111,36 +108,32 @@ const s = StyleSheet.create({
     width: 96,
     height: 96,
     borderWidth: 2,
-    borderColor: '#c9a84c',
-    backgroundColor: '#0f2040',
+    borderColor: '#F0F4FF',
+    backgroundColor: '#001E6B',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 28,
   },
-  badgeInner: {
-    alignItems: 'center',
+  badgeTop:    { fontSize: 8,  color: '#F0F4FF', letterSpacing: 2, marginBottom: 4 },
+  badgePN:     { fontSize: 26, fontWeight: '900', color: '#F0F4FF', letterSpacing: 6 },
+  badgeBottom: { fontSize: 8,  color: '#F0F4FF', letterSpacing: 2, marginTop: 4 },
+
+  triSep: {
+    flexDirection: 'row',
+    width: 180,
+    height: 2,
+    marginBottom: 20,
+    overflow: 'hidden',
   },
-  badgeStar: {
-    fontSize: 8,
-    color: '#c9a84c',
-    letterSpacing: 2,
-    marginVertical: 2,
-  },
-  badgePN: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: '#e8cc80',
-    letterSpacing: 6,
+  triBar: {
+    flex: 1,
+    height: 2,
   },
 
-  sep: {
-    width: 200,
+  simpleSep: {
+    width: 40,
     height: 1,
-    marginBottom: 20,
-  },
-  sepDim: {
-    width: 140,
-    height: 1,
+    backgroundColor: 'rgba(240,244,255,0.3)',
     marginTop: 20,
     marginBottom: 16,
   },
@@ -148,22 +141,23 @@ const s = StyleSheet.create({
   titleSm: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#c9a84c',
+    color: '#F0F4FF',
     letterSpacing: 3,
-    marginBottom: 8,
+    marginBottom: 10,
+    opacity: 0.7,
   },
   titleLg: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
-    color: '#f0f4ff',
-    letterSpacing: 4,
+    color: '#F0F4FF',
+    letterSpacing: 3,
     textAlign: 'center',
   },
 
   subtitle: {
-    fontSize: 12,
-    color: 'rgba(208,216,232,0.55)',
-    letterSpacing: 2,
+    fontSize: 13,
+    color: 'rgba(208,216,232,0.6)',
+    letterSpacing: 1.5,
   },
 
   barTrack: {
@@ -171,32 +165,24 @@ const s = StyleSheet.create({
     bottom: 48,
     left: 48,
     right: 48,
-    height: 2,
-    backgroundColor: '#1a3560',
+    height: 3,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    overflow: 'hidden',
   },
   barFill: {
-    height: 2,
-    backgroundColor: '#c9a84c',
+    height: 3,
+    flexDirection: 'row',
   },
-  barGlow: {
-    position: 'absolute',
-    top: -3,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#e8cc80',
-    shadowColor: '#c9a84c',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 6,
-    elevation: 4,
+  barSegment: {
+    flex: 1,
+    height: 3,
   },
 
   version: {
     position: 'absolute',
     bottom: 24,
     fontSize: 11,
-    color: 'rgba(255,255,255,0.18)',
+    color: 'rgba(255,255,255,0.2)',
     letterSpacing: 1,
   },
 });

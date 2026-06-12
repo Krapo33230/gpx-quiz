@@ -4,96 +4,100 @@
 > Ne pas mélanger plus de 2 effets par écran.
 
 ## 1. PALETTE
---navy:        #0a1628
---navy-mid:    #0f2040
---navy-light:  #1a3560
---gold:        #c9a84c
---gold-light:  #e8cc80
---gold-dim:    #7a6030
---silver:      #d0d8e8
---white:       #f0f4ff
---paper:       #dfe8f5
---paper-warm:  #f5f0e4
---red-alert:   #c0392b
---stamp-green: #1e6b3a
+--bleu-fr:      #002395   (bleu officiel drapeau français)
+--bleu-fonce:   #001249   (fond principal)
+--bleu-mid:     #001E6B   (surface / cartes)
+--bleu-light:   #0035A8   (accents, bordures actives)
+--rouge-fr:     #EF4135   (rouge officiel drapeau français)
+--rouge-fonce:  #8B0000   (rouge sombre, alertes)
+--blanc:        #F0F4FF   (blanc légèrement bleuté)
+--argent:       #D0D8E8   (textes secondaires)
+--paper:        #dfe8f5   (fond document / cahier)
+--paper-warm:   #f5f0e4   (fond formulaire officiel)
+--stamp-green:  #1e6b3a   (validation)
 
-INTERDIT : gray-100, #f3f4f6, bleu #3b82f6, vert #10b981, blanc pur #ffffff
+INTERDIT : gray-100, #f3f4f6, or #c9a84c, or #e8cc80, vert #10b981, blanc pur #ffffff
 
 ## 2. TYPOGRAPHIE
-- Titres institutionnels : Cinzel (letter-spacing min 0.08em)
+- Titres institutionnels : fontWeight 900, uppercase, letterSpacing 0.08em+
 - Manuscrit/cahier : Caveat (rotation ±1.5deg autorisée)
-- Codes/données/labels : Courier Prime (uppercase + letter-spacing 0.15em+)
-- Corps : Inter 400/500
+- Codes/données/labels : fontFamily monospace, uppercase, letterSpacing 0.15em+
+- Corps : Inter 400/500 (system font)
 
-## 3. RÈGLES CSS
+## 3. RÈGLES
 - border-radius : 2px maximum
-- Ombres : box-shadow custom navy ou gold
-- Fond : toujours --navy sauf sections document
+- Ombres : bleu-fonce ou rouge-fr
+- Fond principal : toujours --bleu-fonce sauf sections document
+- Séparateurs : dégradé tricolore (bleu-fr → blanc → rouge-fr)
+- Barre de progression : height 3–6px, sans border-radius, sans or
 
 ## 4. EFFETS
 
-### EFFET-01 · Institutionnel Navy
-Quand : Dashboard, accueil, navigation
-- Texture fond : repeating-linear-gradient lignes fines opacité 0.012
-- Cards : navy-mid, border gold-dim, coin biseauté top-right
-- Badge SVG étoile 12 branches PN en stroke gold
+### EFFET-01 · Drapeau & Institutionnel
+Quand : Splash, accueil, navigation
+- Fond : bleu-fonce
+- Bandes tricolores verticales en fond opacité 0.15 (bleu-fr / blanc / rouge-fr)
+- Cards : bleu-mid, border bleu-light, coin biseauté top-right
+- Badge PN : carré, border 2px blanc, fond bleu-mid, texte blanc bold
 
 ### EFFET-02 · Cahier de Révision
 Quand : Listes modules, fiches révision
 - Fond #dfe8f5 + lignes bleues opacité 0.55 espacement 33px
-- Marge rouge 3px opacité 0.6 à 68px du bord
+- Marge rouge-fr 3px opacité 0.6 à 68px du bord
 - Spirale SVG stroke 3px, ellipses rx:12 ry:16, pattern 44px
 - Perforations 22px, triple ombre
 - Bords déchirés amplitude 32px
-- Titres Caveat 2rem bold rotation -1deg
-- Annotations rouges avec flèche ➜
+- Titres bold rotation -1deg
+- Annotations rouge-fr avec flèche ➜
 
 ### EFFET-03 · Formulaire Officiel
 Quand : Quiz, questions
 - Fond #f5f0e4
 - Filigrane diagonal "SESSION 2024" opacité 0.04
 - Cases à cocher carrées style administratif
-- Numérotation Courier Prime "Q.07 / 20"
+- Numérotation monospace "Q.07 / 20"
 - Tampon VALIDÉ/REFUSÉ rotatif ±8deg
 
 ### EFFET-04 · Tampon & Validation
 Quand : Bonne réponse, module complété
-- Double bordure stamp-green ou stamp-red
-- Texte Cinzel bold uppercase rotation 8deg
+- Double bordure stamp-green ou rouge-fr
+- Texte bold uppercase rotation 8deg
 - Animation scale 0.4→1 durée 0.3s
 
 ### EFFET-05 · Alerte Signalétique
 Quand : Mauvaise réponse, urgence
-- Bandes diagonales 45deg rouge/navy 8px
-- Border-left 4px red-alert
-- Fond #1a0a06 → #2d1008
+- Bandes diagonales 45deg rouge-fr/bleu-fonce 8px
+- Border-left 4px rouge-fr
+- Fond rouge-fonce
 
-### EFFET-06 · Parchemin & Diplôme
+### EFFET-06 · Diplôme République
 Quand : Résultats, certificats, rang débloqué
-- Double bordure gold : 2px solid gold-dim + inset 6px
-- Ornements ✦ aux coins
-- Sceau SVG PN avec halo pulsé
-- Shimmer doré sur CTA
+- Double bordure blanc : 2px solid blanc + inset 6px
+- Ornements ✦ aux coins (couleur blanc)
+- Bande tricolore horizontale en bas
+- Shimmer blanc sur CTA
 
-### EFFET-07 · Carte d'Identité / Profil
+### EFFET-07 · Carte Officielle / Profil
 Quand : Profil candidat
-- Bande verticale gauche 8px gold
-- Hologramme SVG cercles concentriques opacité 0.08
-- Données 2 colonnes : label Courier Prime + valeur Inter
-- Numéro dossier Courier Prime bottom-right
+- Bande verticale gauche 8px rouge-fr
+- Données 2 colonnes : label monospace + valeur Inter
+- Numéro dossier monospace bottom-right
+- Fond bleu-mid
 
 ## 5. COMPOSANTS RÉCURRENTS
-- Badge PN : étoile 12 branches stroke gold, fill navy-mid, texte Cinzel
-- Barre progression : height 6px, pas border-radius, glow gold à l'extrémité
-- CTA : dégradé gold-dim→gold, couleur navy, Cinzel bold, shimmer animé
-- Séparateur : ligne dégradée transparent→gold-dim→transparent
+- Badge PN : carré, border 2px --blanc, fond --bleu-mid, texte blanc bold uppercase
+- Barre progression : height 6px, pas border-radius, couleur bleu-fr ou rouge-fr
+- CTA principal : fond bleu-fr, texte blanc, bold uppercase
+- CTA secondaire : border 2px blanc, fond transparent, texte blanc
+- Séparateur : ligne dégradée bleu-fr → blanc → rouge-fr (tricolore)
 
 ## 6. JAMAIS
 - border-radius > 2px
+- Or (#c9a84c, #e8cc80, #7a6030) — remplacé par blanc ou rouge-fr
 - Couleurs hors palette
 - Effets cahier opacité < 0.4
 - Spirale stroke < 2.5px
 - Perforations < 20px
 - Bords déchirés amplitude < 24px
-- Gradients bleu/violet génériques
+- Gradients génériques bleu/violet
 - Animations > 0.4s

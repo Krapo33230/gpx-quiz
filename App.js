@@ -55,6 +55,7 @@ import PlusScreen       from './src/screens/PlusScreen';
 import InfoScreen            from './src/screens/InfoScreen';
 import CGUScreen             from './src/screens/CGUScreen';
 import ConfidentialiteScreen from './src/screens/ConfidentialiteScreen';
+import SplashScreen          from './src/screens/SplashScreen';
 
 // ─── Thème ───────────────────────────────────────────────────────────────────
 import { COLORS } from './src/theme/colors';
@@ -187,11 +188,22 @@ export default function App() {
   const [initialRoute, setInitialRoute] = useState(null);
 
   useEffect(() => {
-    initPurchases();
-    setInitialRoute('Welcome');
+    const init = async () => {
+      await Promise.all([
+        initPurchases(),
+        new Promise(resolve => setTimeout(resolve, 1800)), // durée minimum du splash
+      ]);
+      setInitialRoute('Welcome');
+    };
+    init();
   }, []);
 
-  if (!initialRoute) return null; // attend la vérification AsyncStorage
+  if (!initialRoute) return (
+    <SafeAreaProvider>
+      <StatusBar style="light" />
+      <SplashScreen />
+    </SafeAreaProvider>
+  );
 
   return (
     <SafeAreaProvider>

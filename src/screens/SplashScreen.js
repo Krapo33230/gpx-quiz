@@ -41,7 +41,7 @@ export default function SplashScreen() {
         {/* Badge PN */}
         <View style={s.badge}>
           <Text style={s.badgeTop}>✦  ✦  ✦</Text>
-          <Text style={s.badgePN}>PN</Text>
+          <Text style={s.badgePN}>CP</Text>
           <Text style={s.badgeBottom}>✦  ✦  ✦</Text>
         </View>
 
@@ -117,6 +117,7 @@ const s = StyleSheet.create({
   badgeTop:    { fontSize: 8,  color: '#F0F4FF', letterSpacing: 2, marginBottom: 4 },
   badgePN:     { fontSize: 26, fontWeight: '900', color: '#F0F4FF', letterSpacing: 6 },
   badgeBottom: { fontSize: 8,  color: '#F0F4FF', letterSpacing: 2, marginTop: 4 },
+
 
   triSep: {
     flexDirection: 'row',

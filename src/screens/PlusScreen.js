@@ -143,6 +143,26 @@ export default function PlusScreen({ navigation }) {
           </View>
         </View>
 
+        {/* ── Légal ── */}
+        <Text style={styles.sectionLabel}>LÉGAL</Text>
+        <View style={styles.section}>
+          {[
+            { label: 'Conditions d\'utilisation', icon: '📄', route: 'CGU' },
+            { label: 'Politique de confidentialité', icon: '🔒', route: 'Confidentialite' },
+          ].map((item, index, arr) => (
+            <TouchableOpacity
+              key={item.route}
+              style={[styles.row, index < arr.length - 1 && styles.rowBorder]}
+              onPress={() => navigation.navigate(item.route)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.rowIcon}>{item.icon}</Text>
+              <Text style={styles.rowLabel}>{item.label}</Text>
+              <Text style={styles.rowArrow}>→</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         {/* ── Danger zone ── */}
         <TouchableOpacity style={styles.resetBtn} onPress={handleReset} activeOpacity={0.8}>
           <Text style={styles.resetText}>🗑  Réinitialiser mes données</Text>

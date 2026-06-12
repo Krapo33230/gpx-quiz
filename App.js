@@ -52,7 +52,9 @@ import WelcomeScreen    from './src/screens/WelcomeScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import DailyStartScreen from './src/screens/DailyStartScreen';
 import PlusScreen       from './src/screens/PlusScreen';
-import InfoScreen       from './src/screens/InfoScreen';
+import InfoScreen            from './src/screens/InfoScreen';
+import CGUScreen             from './src/screens/CGUScreen';
+import ConfidentialiteScreen from './src/screens/ConfidentialiteScreen';
 
 // ─── Thème ───────────────────────────────────────────────────────────────────
 import { COLORS } from './src/theme/colors';
@@ -253,6 +255,10 @@ export default function App() {
             name="Lexique"
             component={LexiqueScreen}
           />
+
+          {/* ── 8b. Légal ───────────────────────────────────── */}
+          <Stack.Screen name="CGU"             component={CGUScreen} />
+          <Stack.Screen name="Confidentialite" component={ConfidentialiteScreen} />
 
           {/* ── 8. Paywall (modale bottom-sheet) ──────────────── */}
           <Stack.Screen

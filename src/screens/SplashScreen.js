@@ -45,6 +45,7 @@ export default function SplashScreen() {
           resizeMode="contain"
         />
 
+
         {/* Séparateur tricolore */}
         <View style={s.triSep}>
           <View style={[s.triBar, { backgroundColor: '#002395' }]} />
@@ -105,7 +106,7 @@ const s = StyleSheet.create({
   },
 
   logo: {
-    width: 110,
+    width: 220,
     height: 110,
     marginBottom: 28,
   },

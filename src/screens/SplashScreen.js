@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Animated, StyleSheet, Dimensions, Image } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,12 +38,12 @@ export default function SplashScreen() {
       {/* Contenu centré */}
       <Animated.View style={[s.center, { opacity: fade, transform: [{ scale }] }]}>
 
-        {/* Badge PN */}
-        <View style={s.badge}>
-          <Text style={s.badgeTop}>✦  ✦  ✦</Text>
-          <Text style={s.badgePN}>CP</Text>
-          <Text style={s.badgeBottom}>✦  ✦  ✦</Text>
-        </View>
+        {/* Logo */}
+        <Image
+          source={require('../../assets/icon.png')}
+          style={s.logo}
+          resizeMode="contain"
+        />
 
         {/* Séparateur tricolore */}
         <View style={s.triSep}>
@@ -104,20 +104,11 @@ const s = StyleSheet.create({
     paddingHorizontal: 32,
   },
 
-  badge: {
-    width: 96,
-    height: 96,
-    borderWidth: 2,
-    borderColor: '#F0F4FF',
-    backgroundColor: '#001E6B',
-    alignItems: 'center',
-    justifyContent: 'center',
+  logo: {
+    width: 110,
+    height: 110,
     marginBottom: 28,
   },
-  badgeTop:    { fontSize: 8,  color: '#F0F4FF', letterSpacing: 2, marginBottom: 4 },
-  badgePN:     { fontSize: 26, fontWeight: '900', color: '#F0F4FF', letterSpacing: 6 },
-  badgeBottom: { fontSize: 8,  color: '#F0F4FF', letterSpacing: 2, marginTop: 4 },
-
 
   triSep: {
     flexDirection: 'row',

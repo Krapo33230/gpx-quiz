@@ -201,7 +201,8 @@ export default function OnboardingScreen({ navigation, route }) {
     );
   }
 
-  const progress = ((step + 1) / TOTAL_STEPS) * 100;
+  const STEP_PROGRESS = [15, 28, 40, 52, 61, 68, 75, 82, 88, 94, 100];
+  const progress = STEP_PROGRESS[Math.min(step, STEP_PROGRESS.length - 1)];
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>

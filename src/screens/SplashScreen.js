@@ -19,10 +19,7 @@ export default function SplashScreen() {
   return (
     <View style={s.root}>
       <Animated.View style={[s.center, { opacity: fade }]}>
-        <Text style={s.label}>PRÉPARATION AU CONCOURS</Text>
         <Text style={s.title}>ConcoursPolice</Text>
-        <View style={s.sep} />
-        <Text style={s.subtitle}>Gardien de la Paix · Police Nationale</Text>
       </Animated.View>
 
       <View style={s.barTrack}>

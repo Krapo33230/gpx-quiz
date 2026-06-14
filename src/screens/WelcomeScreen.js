@@ -49,7 +49,7 @@ export default function WelcomeScreen({ navigation }) {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#001249' },
+  root: { flex: 1, backgroundColor: '#0F0F0F' },
   center: {
     flex: 1,
     alignItems: 'center',
@@ -77,8 +77,7 @@ const s = StyleSheet.create({
   },
   primaryBtn: {
     backgroundColor: '#002395',
-    borderWidth: 1,
-    borderColor: '#F0F4FF',
+    borderRadius: 100,
     paddingVertical: 18,
     alignItems: 'center',
   },

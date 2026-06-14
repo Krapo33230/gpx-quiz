@@ -6,9 +6,9 @@ export const COLORS = {
   blanc:       '#F0F4FF',
 
   // Fonds
-  background:  '#001249',
-  surface:     '#001E6B',
-  surfaceAlt:  '#002B8F',
+  background:  '#0F0F0F',
+  surface:     '#1C1C1E',
+  surfaceAlt:  '#252528',
 
   // Bordures
   border:      'rgba(255,255,255,0.08)',
@@ -27,8 +27,8 @@ export const COLORS = {
 
   // Alias (compatibilité)
   primary:      '#002395',
-  primaryLight: '#0035A8',
-  primaryDark:  '#001249',
+  primaryLight: '#1A4AFF',
+  primaryDark:  '#0F0F0F',
   accent:       '#EF4135',
   white:        '#F0F4FF',
 };

@@ -18,10 +18,10 @@ export default function SplashScreen() {
       Animated.spring(whiteY, { toValue: 0, friction: 7, tension: 32, useNativeDriver: true }),
       Animated.spring(redY,   { toValue: 0, friction: 7, tension: 32, useNativeDriver: true }),
     ]).start(() => {
-      // 2. Bandes disparaissent + texte apparaît
+      // 2. Bandes disparaissent + texte apparaît, puis reste visible
       Animated.parallel([
         Animated.timing(bandsOp, { toValue: 0, duration: 400, useNativeDriver: true }),
-        Animated.timing(textOp,  { toValue: 1, duration: 500, delay: 200, useNativeDriver: true }),
+        Animated.timing(textOp,  { toValue: 1, duration: 700, delay: 300, useNativeDriver: true }),
         Animated.spring(textY,   { toValue: 0, friction: 7, useNativeDriver: true }),
       ]).start();
     });

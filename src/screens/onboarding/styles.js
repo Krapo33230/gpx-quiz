@@ -1,0 +1,170 @@
+import { StyleSheet } from 'react-native';
+import { FONTS, RADIUS, SPACING } from '../../theme/colors';
+import { BG, ACCENT, CARD, BLUE, BUBBLE_BG, BUBBLE_BORDER } from './theme';
+
+export const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BG },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.md,
+    gap: SPACING.md,
+  },
+  backBtn:       { width: 32, alignItems: 'center', justifyContent: 'center' },
+  backText:      { fontSize: 22, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
+  progressTrack: { flex: 1, height: 20, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', justifyContent: 'center' },
+  progressFill:  { ...StyleSheet.absoluteFillObject, height: '100%' },
+
+  centerFull: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.xl },
+  stepWrap:   { flex: 1, paddingHorizontal: SPACING.lg },
+
+  mascotRow: { flexDirection: 'row', alignItems: 'flex-end', gap: SPACING.md, marginBottom: SPACING.lg, paddingTop: SPACING.sm },
+  bubbleSide: {
+    flex: 1,
+    backgroundColor: CARD,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  bubbleSideText: { ...FONTS.body, color: '#fff', lineHeight: 24 },
+
+  optionList:    { flex: 1 },
+  optionTouchable: { marginBottom: SPACING.sm, borderRadius: RADIUS.md, overflow: 'hidden' },
+  optionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: CARD,
+    borderRadius: RADIUS.md,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.08)',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 16,
+    gap: SPACING.sm,
+  },
+  optionRowSelected:   { borderColor: ACCENT },
+  optionLabel:         { ...FONTS.body, color: '#fff', fontWeight: '600', flex: 1 },
+  optionLabelSelected: { color: ACCENT },
+  optionTag:           { ...FONTS.sm, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+  optionTagSelected:   { color: ACCENT },
+
+  checkDot: {
+    width: 24, height: 24, borderRadius: 12,
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.2)',
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
+  checkDotSelected: { backgroundColor: BLUE, borderColor: BLUE },
+  checkDotText:     { color: '#fff', fontSize: 13, fontWeight: '900' },
+
+  levelBadge:     { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
+  levelBadgeText: { fontSize: 9, fontWeight: '800', color: 'rgba(255,255,255,0.7)', letterSpacing: 0.8 },
+
+  loadingLabel:    { ...FONTS.xs, color: 'rgba(255,255,255,0.35)', letterSpacing: 1.5, marginTop: SPACING.lg, marginBottom: SPACING.md },
+  loadingBarTrack: { width: '100%', height: 8, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: SPACING.lg },
+  loadingBarFill:  { height: '100%', borderRadius: RADIUS.pill, backgroundColor: ACCENT },
+  loadingText:     { ...FONTS.body, color: 'rgba(255,255,255,0.7)', textAlign: 'center', lineHeight: 28 },
+
+  sellScroll: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.xl },
+  sellTitle:  { fontSize: 24, fontWeight: '900', color: '#FFFFFF', marginBottom: SPACING.sm, marginTop: SPACING.sm, lineHeight: 32 },
+  sellSub:    { fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 22, marginBottom: SPACING.xl },
+  statsChocRow: {
+    flexDirection: 'row',
+    backgroundColor: CARD,
+    borderRadius: RADIUS.lg,
+    paddingVertical: SPACING.lg,
+    marginBottom: SPACING.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  statsChocItem:  { flex: 1, alignItems: 'center' },
+  statsChocNum:   { fontSize: 26, fontWeight: '900', color: '#FFFFFF' },
+  statsChocLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', fontWeight: '600', marginTop: 4 },
+  statsChocSep:   { width: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
+
+  featureRow: {
+    flexDirection: 'row', alignItems: 'center', gap: SPACING.md,
+    paddingVertical: SPACING.md,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)',
+  },
+  featureIcon: {
+    width: 44, height: 44, borderRadius: RADIUS.md,
+    backgroundColor: CARD, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', flexShrink: 0,
+  },
+  featureText:  { flex: 1 },
+  featureTitle: { ...FONTS.body, fontWeight: '800', color: '#fff', marginBottom: 3 },
+  featureSub:   { ...FONTS.sm, color: 'rgba(255,255,255,0.45)', lineHeight: 18 },
+
+  profileScroll:    { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: 48 },
+  sectionBadgeRow:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: SPACING.lg },
+  sectionBadge:     { ...FONTS.xs, color: 'rgba(255,255,255,0.4)', fontWeight: '800', letterSpacing: 1.2 },
+  sectionBadgeStep: { ...FONTS.xs, color: 'rgba(255,255,255,0.4)', fontWeight: '700' },
+  profileTitle:  { fontSize: 22, fontWeight: '900', color: '#FFFFFF', marginBottom: SPACING.lg },
+  profileInput: {
+    backgroundColor: CARD,
+    borderRadius: RADIUS.md,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.12)',
+    color: '#FFFFFF',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 16,
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  orRow:  { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginVertical: SPACING.lg },
+  orLine: { flex: 1, height: 1, backgroundColor: 'rgba(255,255,255,0.1)' },
+  orText: { ...FONTS.sm, color: 'rgba(255,255,255,0.3)', fontWeight: '600' },
+  emailBtn:     { borderRadius: RADIUS.md, borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)', paddingVertical: 16, alignItems: 'center' },
+  emailBtnText: { ...FONTS.body, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
+
+  notifTitle:      { fontSize: 22, fontWeight: '900', color: '#FFFFFF', textAlign: 'center', marginTop: SPACING.xl, marginBottom: SPACING.sm },
+  notifSub:        { ...FONTS.body, color: 'rgba(255,255,255,0.5)', textAlign: 'center', lineHeight: 24, marginBottom: SPACING.xl, paddingHorizontal: SPACING.sm },
+  notifYesBtn:     { backgroundColor: ACCENT, borderRadius: RADIUS.pill, paddingVertical: 18, alignItems: 'center', width: '100%', marginBottom: SPACING.sm },
+  notifYesBtnText: { fontSize: 16, fontWeight: '900', color: '#0A1628', letterSpacing: 1 },
+  notifNoBtn:      { paddingVertical: 14, alignItems: 'center', width: '100%' },
+  notifNoBtnText:  { ...FONTS.body, color: 'rgba(255,255,255,0.35)', fontWeight: '600' },
+
+  footer:          { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xl, gap: SPACING.sm },
+  cta:             { backgroundColor: '#002395', borderRadius: RADIUS.pill, paddingVertical: 18, alignItems: 'center' },
+  ctaDisabled:     { backgroundColor: '#1C1C1E', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
+  ctaText:         { fontSize: 16, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 },
+  ctaTextDisabled: { color: 'rgba(255,255,255,0.3)' },
+});
+
+export const chatStyles = StyleSheet.create({
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: SPACING.xl,
+  },
+  centerBubble: {
+    backgroundColor: BUBBLE_BG,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderWidth: 2,
+    borderColor: 'rgba(68, 136, 255, 0.6)',
+    width: '100%',
+    height: 130,
+    justifyContent: 'center',
+    marginTop: SPACING.xl,
+  },
+  centerBubbleText: { fontSize: 17, color: '#FFFFFF', lineHeight: 26, textAlign: 'center', fontWeight: '400' },
+
+  sideContainer: { flex: 1, paddingHorizontal: SPACING.lg, paddingTop: SPACING.xl },
+  sideRow:       { flexDirection: 'row', alignItems: 'flex-start', gap: SPACING.md },
+  sideBubble: {
+    flex: 1,
+    backgroundColor: BUBBLE_BG,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderWidth: 2,
+    borderColor: 'rgba(68, 136, 255, 0.6)',
+  },
+  sideBubbleText: { fontSize: 17, color: '#FFFFFF', lineHeight: 26, fontWeight: '400' },
+});

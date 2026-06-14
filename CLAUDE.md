@@ -32,7 +32,13 @@ App.js                          ← NavigationContainer + Stack.Navigator + Main
 src/
   screens/
     WelcomeScreen.js            ← Écran d'accueil première ouverture
-    OnboardingScreen.js         ← Onboarding (nom, âge, objectif)
+    SplashScreen.js             ← Splash animé (bandes tricolores → texte ConcoursPolice)
+    OnboardingScreen.js         ← Onboarding 11 étapes — importe depuis onboarding/
+    onboarding/
+      data.js                   ← Données : questions, réactions, confettis, constantes
+      theme.js                  ← Couleurs locales onboarding (BG, CARD, BLUE, gradients)
+      styles.js                 ← StyleSheets (styles + chatStyles)
+      components.js             ← Composants : MascotBubble, OptionRow, Cta, TypewriterChat, IntroChat, LoadingStep
     DailyStartScreen.js         ← Écran de démarrage journalier (objectif du jour)
     AccueilScreen.js            ← Accueil, stats rapides, streak badge, MatiereBar, badge de rang XP
     ChoixModeScreen.js          ← Sélection mode/matière — passe un objet {id, emoji, titre…}
@@ -139,6 +145,13 @@ src/
 ### Streak
 - `todayStr()` et `yesterdayStr()` utilisent l'**heure locale** (pas UTC) pour éviter les bugs après minuit.
 
+### Design & Couleurs
+- **App cible Android uniquement** — ne pas utiliser `shadow*` iOS, préférer `elevation` + `borderColor` coloré.
+- Thème global : fond `#0F0F0F` (noir), surfaces `#1C1C1E` (gris sombre), accent bleu `#1A4AFF`.
+- Dégradé standard cartes/options : `['#1A4AFF', '#0F0F0F']` (gauche→droite).
+- Lire `DESIGN.md` avant tout travail visuel.
+- Émulateur Android : Android Studio installé dans `/Applications`, émulateur Pixel 8 API 37 disponible.
+
 ### Composants
 - Importer depuis `'../components/ui'` — le barrel re-exporte tout.
 - Ne pas importer directement depuis `Button.js`, `ProgressBar.js`, etc. sauf si seul ce composant est nécessaire.
@@ -180,6 +193,7 @@ git add . && git commit -m "feat: ..." && git push
 | 14    | ✅ Bêta-test terminé |
 | 14b   | ✅ Auto-évaluation, XP/Grades, LevelUp, graphe 7 jours, options mélangées |
 | 14c   | ✅ Onboarding, DailyStart, InfoScreen, refacto composants + storage |
+| 14d   | ✅ Refonte design complète : thème noir/bleu, onboarding découpé en modules, émulateur Android configuré |
 | 15    | ⏳ Mesurer : rétention J3 > 50 %, sessions/semaine > 4, clics paywall > 25 % |
 | 16    | ✅ Publié sur Play Store — Alpha actif depuis 28 avr. 2026, tests fermés avec 12 testeurs |
 | 17    | ⏳ Intégrer RevenueCat (paiement réel) — clé `goog_XXXX` à remplacer dans `src/utils/purchases.js` |

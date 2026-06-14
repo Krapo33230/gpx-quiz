@@ -3,18 +3,19 @@
 > Style cible : moderne, épuré, motivant — inspiré Duolingo / apps de quiz actuelles.
 
 ## 1. PALETTE
---bleu-fr:      #002395   (bleu officiel drapeau français)
---bleu-fonce:   #001249   (fond principal)
---bleu-mid:     #001E6B   (surface / cartes)
---bleu-light:   #0035A8   (accents, bordures actives)
+--noir:         #0F0F0F   (fond principal — noir)
+--surface:      #1C1C1E   (cartes / surfaces — gris sombre)
+--surface-alt:  #252528   (surfaces secondaires)
+--bleu-vif:     #1A4AFF   (bleu vif — dégradés, accents)
+--bleu-fr:      #002395   (bleu officiel drapeau français — hero cards)
 --rouge-fr:     #EF4135   (rouge officiel drapeau français)
---rouge-fonce:  #8B0000   (rouge sombre, alertes)
 --blanc:        #F0F4FF   (blanc légèrement bleuté)
 --argent:       #D0D8E8   (textes secondaires)
 --success:      #58CC02   (vert Duolingo — validations)
 --warning:      #FFC800   (jaune — streak, attention)
 
-INTERDIT : or (#c9a84c), gris génériques (#f3f4f6), blanc pur #ffffff, gradients bleu/violet génériques
+Dégradé principal cartes/options : #1A4AFF → #0F0F0F (gauche → droite)
+INTERDIT : or (#c9a84c), gris génériques (#f3f4f6), blanc pur #ffffff
 
 ## 2. TYPOGRAPHIE
 - Titres : fontWeight 800–900, pas de letterSpacing excessif

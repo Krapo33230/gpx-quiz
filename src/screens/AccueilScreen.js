@@ -1,47 +1,31 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Animated,
-  ScrollView,
-  TouchableOpacity,
+  View, Text, StyleSheet, Animated, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
-import { PrimaryButton, OutlineButton, TricolorMark } from '../components/ui';
+import { COLORS, FONTS, RADIUS, SPACING } from '../theme/colors';
 import {
-  getStats, getStreak,
-  getXP, getLevelInfo, getDailyCount, getDailyTime, getWeeklyScores, getObjectif, getUserName,
+  getStats, getStreak, getXP, getLevelInfo,
+  getDailyCount, getDailyTime, getWeeklyScores, getObjectif, getUserName,
 } from '../utils/storage';
 
-const DAILY_GOAL_DEFAULT = 10;
-
 export default function AccueilScreen({ navigation }) {
-  const [stats,      setStats]      = useState({ sessions: 0, totalCorrect: 0, totalQuestions: 0 });
   const [streak,     setStreak]     = useState(0);
   const [xpInfo,     setXpInfo]     = useState(null);
   const [dailyCount, setDailyCount] = useState(0);
-  const [dailyGoal,  setDailyGoal]  = useState(DAILY_GOAL_DEFAULT);
+  const [dailyGoal,  setDailyGoal]  = useState(10);
   const [dailyTime,  setDailyTime]  = useState(0);
   const [weekDays,   setWeekDays]   = useState([]);
   const [userName,   setUserName]   = useState('');
 
-  const fadeAnim  = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
+  const fade  = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(20)).current;
 
   async function loadAll() {
     const [s, sk, xp, daily, weekly, goal, name, time] = await Promise.all([
-      getStats(),
-      getStreak(),
-      getXP(),
-      getDailyCount(),
-      getWeeklyScores(),
-      getObjectif(),
-      getUserName(),
-      getDailyTime(),
+      getStats(), getStreak(), getXP(), getDailyCount(),
+      getWeeklyScores(), getObjectif(), getUserName(), getDailyTime(),
     ]);
-    setStats(s);
     setStreak(sk.currentStreak);
     setXpInfo(getLevelInfo(xp));
     setDailyCount(daily);
@@ -54,8 +38,8 @@ export default function AccueilScreen({ navigation }) {
   useEffect(() => {
     loadAll();
     Animated.parallel([
-      Animated.timing(fadeAnim,  { toValue: 1, duration: 500, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 0, friction: 7, tension: 50, useNativeDriver: true }),
+      Animated.timing(fade,  { toValue: 1, duration: 400, useNativeDriver: true }),
+      Animated.spring(slide, { toValue: 0, friction: 7, tension: 50, useNativeDriver: true }),
     ]).start();
   }, []);
 
@@ -64,105 +48,123 @@ export default function AccueilScreen({ navigation }) {
     return unsub;
   }, [navigation]);
 
-  const goalSeconds  = dailyGoal * 60;
-  const timePct      = Math.min((dailyTime / goalSeconds) * 100, 100);
-  const timeDone     = dailyTime >= goalSeconds;
-  const timeMinStr   = `${Math.floor(dailyTime / 60)} min`;
-  const mascotMsg    = getMascotMessage(streak, dailyCount, stats.sessions);
+  const goalSeconds = dailyGoal * 60;
+  const timePct     = Math.min((dailyTime / goalSeconds) * 100, 100);
+  const timeDone    = dailyTime >= goalSeconds;
+
+  const OUTILS = [
+    { icon: '📝', label: 'Quiz',           sub: 'Entraîne-toi',        route: 'ChoixMode' },
+    { icon: '🎯', label: 'Auto-éval',      sub: 'Teste ton niveau',    route: 'AutoEval'  },
+    { icon: '📖', label: 'Lexique',        sub: 'Termes clés',         route: 'Lexique'   },
+    { icon: '📊', label: 'Statistiques',   sub: 'Tes performances',    route: 'Resultats' },
+  ];
+
+  const BIENTOT = [
+    { icon: '📅', label: 'Mon programme',        sub: 'Plan de révision personnalisé' },
+    { icon: '🏋️', label: 'Exercices quotidiens', sub: 'Entraînement du jour'          },
+    { icon: '🗓️', label: 'Agenda',               sub: 'Dates clés du concours'        },
+    { icon: '📰', label: 'Fiches de cours',      sub: 'Résumés par matière'           },
+  ];
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={s.safe} edges={['top']}>
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── Header ── */}
-        <Animated.View style={[styles.topHeader, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.topHeaderLeft}>
-            <TricolorMark size="sm" />
-            <View style={styles.topHeaderText}>
-              <Text style={styles.helloText}>
-                Bonjour{userName ? `, ${userName}` : ''} 👋
-              </Text>
-              <Text style={styles.helloSub} numberOfLines={2}>{mascotMsg}</Text>
-            </View>
+        <Animated.View style={[s.header, { opacity: fade, transform: [{ translateY: slide }] }]}>
+          <View style={s.headerLeft}>
+            <Text style={s.hello}>Bonjour{userName ? `, ${userName}` : ''} 👋</Text>
+            <Text style={s.helloSub}>
+              {streak > 0 ? `🔥 ${streak} jour${streak > 1 ? 's' : ''} de suite` : 'Prêt à réviser ?'}
+            </Text>
           </View>
-          <TouchableOpacity onPress={() => navigation.navigate('Niveaux')} style={styles.xpChip}>
-            <Text style={styles.xpChipText}>⚡ {xpInfo?.xp ?? 0} XP</Text>
-            {xpInfo && <Text style={styles.xpChipLevel}>{xpInfo.level.emoji} {xpInfo.level.name}</Text>}
+          <TouchableOpacity style={s.xpChip} onPress={() => navigation.navigate('Niveaux')}>
+            <Text style={s.xpChipXP}>⚡ {xpInfo?.xp ?? 0} XP</Text>
+            {xpInfo && <Text style={s.xpChipLevel}>{xpInfo.level.emoji} {xpInfo.level.name}</Text>}
           </TouchableOpacity>
         </Animated.View>
 
-        {/* ── Streak banner ── */}
-        {streak > 0 && (
-          <Animated.View style={[styles.streakBanner, { opacity: fadeAnim }]}>
-            <Text style={styles.streakBannerText}>
-              🔥 {streak} jour{streak > 1 ? 's' : ''} de suite — continue comme ça !
-            </Text>
-          </Animated.View>
-        )}
-
-        {/* ── Quête du jour ── */}
-        <Animated.View style={[styles.questCard, SHADOWS.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.questHeader}>
-            <Text style={styles.questTag}>QUÊTE DU JOUR</Text>
-            {timeDone && <Text style={styles.questDoneTag}>✓ COMPLÉTÉE</Text>}
+        {/* ── Hero — Quiz du jour ── */}
+        <Animated.View style={[s.heroCard, { opacity: fade, transform: [{ translateY: slide }] }]}>
+          <View style={s.heroTop}>
+            <View>
+              <Text style={s.heroLabel}>QUIZ DU JOUR</Text>
+              <Text style={s.heroTitle}>
+                {timeDone ? 'Objectif atteint ! 🎉' : `${dailyCount} question${dailyCount > 1 ? 's' : ''} aujourd'hui`}
+              </Text>
+            </View>
+            {timeDone && <Text style={s.heroBadge}>✓</Text>}
           </View>
-          <Text style={styles.questTitle}>🕐 Objectif : {dailyGoal} min / jour</Text>
-          <View style={styles.questBarTrack}>
-            <View style={[styles.questBarFill, { width: `${timePct}%` }]} />
+          <View style={s.heroBarTrack}>
+            <View style={[s.heroBarFill, { width: `${timePct}%`, backgroundColor: timeDone ? COLORS.success : '#F0F4FF' }]} />
           </View>
-          <Text style={styles.questProgress}>{timeMinStr} / {dailyGoal} min</Text>
+          <Text style={s.heroBarLabel}>{Math.floor(dailyTime / 60)} / {dailyGoal} min</Text>
+          <TouchableOpacity style={s.heroBtn} onPress={() => navigation.navigate('ChoixMode')} activeOpacity={0.85}>
+            <Text style={s.heroBtnText}>🚀  Commencer l'entraînement</Text>
+          </TouchableOpacity>
         </Animated.View>
 
-        {/* ── Série — cercles des jours ── */}
-        <Animated.View style={[styles.weekCard, SHADOWS.card, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <View style={styles.weekHeader}>
-            <Text style={styles.weekTitle}>🔥 Série · {streak} {streak === 1 ? 'jour' : 'jours'}</Text>
-          </View>
-          <View style={styles.weekRow}>
+        {/* ── Série semaine ── */}
+        <Animated.View style={[s.card, { opacity: fade }]}>
+          <Text style={s.sectionTitle}>MA SÉRIE</Text>
+          <View style={s.weekRow}>
             {weekDays.map((d, i) => (
-              <View key={i} style={styles.weekDayCol}>
-                <Text style={styles.weekDayLetter}>{d.label}</Text>
+              <View key={i} style={s.weekCol}>
+                <Text style={s.weekLetter}>{d.label}</Text>
                 <View style={[
-                  styles.weekCircle,
-                  d.played  && styles.weekCircleDone,
-                  d.isToday && !d.played && styles.weekCircleToday,
+                  s.weekCircle,
+                  d.played  && s.weekCircleDone,
+                  d.isToday && !d.played && s.weekCircleToday,
                 ]}>
-                  {d.played
-                    ? <Text style={styles.weekCircleCheck}>✓</Text>
-                    : <Text style={styles.weekCircleDot}>·</Text>
-                  }
+                  <Text style={[s.weekCircleText, d.played && s.weekCircleTextDone]}>
+                    {d.played ? '✓' : '·'}
+                  </Text>
                 </View>
               </View>
             ))}
           </View>
         </Animated.View>
 
-        {/* ── Boutons ── */}
-        <Animated.View style={[styles.actions, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-          <PrimaryButton
-            label="🚀  Commencer l'entraînement"
-            onPress={() => navigation.navigate('ChoixMode')}
-          />
-          <OutlineButton
-            label="🎯  Faire mon auto-évaluation"
-            onPress={() => navigation.navigate('AutoEval')}
-          />
+        {/* ── Mes outils ── */}
+        <Animated.View style={{ opacity: fade }}>
+          <Text style={s.sectionTitle}>MES OUTILS</Text>
+          <View style={s.grid}>
+            {OUTILS.map((item) => (
+              <TouchableOpacity
+                key={item.route}
+                style={s.gridCard}
+                onPress={() => navigation.navigate(item.route)}
+                activeOpacity={0.8}
+              >
+                <Text style={s.gridIcon}>{item.icon}</Text>
+                <Text style={s.gridLabel}>{item.label}</Text>
+                <Text style={s.gridSub}>{item.sub}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </Animated.View>
 
-        <Text style={styles.footer}>Prépare-toi avec confiance 💪</Text>
+        {/* ── Bientôt ── */}
+        <Animated.View style={{ opacity: fade }}>
+          <View style={s.sectionTitleRow}>
+            <Text style={s.sectionTitle}>À VENIR</Text>
+            <View style={s.bientotBadge}><Text style={s.bientotBadgeText}>Bientôt</Text></View>
+          </View>
+          <View style={s.grid}>
+            {BIENTOT.map((item, i) => (
+              <View key={i} style={[s.gridCard, s.gridCardDisabled]}>
+                <Text style={[s.gridIcon, s.disabledText]}>{item.icon}</Text>
+                <Text style={[s.gridLabel, s.disabledText]}>{item.label}</Text>
+                <Text style={[s.gridSub, s.disabledText]}>{item.sub}</Text>
+              </View>
+            ))}
+          </View>
+        </Animated.View>
+
+        <View style={{ height: SPACING.xxl }} />
       </ScrollView>
     </SafeAreaView>
   );
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function getMascotMessage(streak, dailyCount, sessions) {
-  if (sessions === 0)   return "Bienvenue ! Commençons ta préparation 👋";
-  if (dailyCount >= 10) return "Quête du jour complétée ! Tu es en feu 🔥";
-  if (streak >= 7)      return `${streak} jours de suite ! Inarrêtable 🏆`;
-  if (streak >= 3)      return `Série de ${streak} jours ! Continue 💪`;
-  if (dailyCount > 0)   return "Bien parti ! Encore quelques questions.";
-  return "C'est l'heure de s'entraîner ! 🎯";
 }
 
 function buildWeekRow(weeklyScores) {
@@ -173,76 +175,99 @@ function buildWeekRow(weeklyScores) {
   }));
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: '#0E1829' },
+const s = StyleSheet.create({
+  safe:   { flex: 1, backgroundColor: COLORS.background },
   scroll: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xxl },
 
-  topHeader: {
+  // Header
+  header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
     paddingTop: SPACING.md,
-    paddingBottom: SPACING.md,
-    marginBottom: SPACING.sm,
-    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
-  topHeaderLeft: { flexDirection: 'row', alignItems: 'flex-start', flex: 1, minWidth: 0 },
-  topHeaderText: { marginLeft: SPACING.sm, flex: 1, minWidth: 0 },
-  helloText:  { fontSize: 18, fontWeight: '800', color: '#FFFFFF' },
-  helloSub:   { ...FONTS.xs, color: 'rgba(255,255,255,0.45)', marginTop: 2 },
+  headerLeft: { flex: 1 },
+  hello:    { fontSize: 22, fontWeight: '900', color: COLORS.text },
+  helloSub: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
   xpChip: {
-    backgroundColor: '#162034',
-    borderRadius: RADIUS.pill,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.sm,
-    paddingVertical: 6,
+    paddingVertical: 8,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#1E2F48',
-    flexShrink: 0,
+    borderColor: COLORS.border,
+    minWidth: 72,
   },
-  xpChipText:  { ...FONTS.xs, color: '#FFFFFF', fontWeight: '900' },
-  xpChipLevel: { ...FONTS.xs, color: 'rgba(255,255,255,0.5)', marginTop: 1 },
+  xpChipXP:    { fontSize: 12, fontWeight: '900', color: COLORS.text },
+  xpChipLevel: { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
 
-  streakBanner: {
-    backgroundColor: '#1A2A0A',
-    borderRadius: RADIUS.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: '#2A4A0A',
+  // Hero card
+  heroCard: {
+    backgroundColor: COLORS.bleuFr,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
   },
-  streakBannerText: { ...FONTS.sm, color: '#7DDB3A', fontWeight: '700' },
+  heroTop:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.md },
+  heroLabel: { fontSize: 11, fontWeight: '800', color: 'rgba(240,244,255,0.6)', letterSpacing: 1.5, marginBottom: 4 },
+  heroTitle: { fontSize: 18, fontWeight: '900', color: '#F0F4FF' },
+  heroBadge: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.success, textAlign: 'center', lineHeight: 32, fontSize: 16, fontWeight: '900', color: '#fff', overflow: 'hidden' },
+  heroBarTrack: { height: 8, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.15)', overflow: 'hidden', marginBottom: 6 },
+  heroBarFill:  { height: '100%', borderRadius: RADIUS.pill },
+  heroBarLabel: { fontSize: 12, color: 'rgba(240,244,255,0.6)', marginBottom: SPACING.md },
+  heroBtn: {
+    backgroundColor: '#F0F4FF',
+    borderRadius: RADIUS.pill,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  heroBtnText: { fontSize: 15, fontWeight: '900', color: COLORS.bleuFr },
 
-  questCard: {
-    backgroundColor: '#162034',
+  // Section title
+  sectionTitle:    { fontSize: 12, fontWeight: '800', color: COLORS.textSecondary, letterSpacing: 1.2, marginBottom: SPACING.sm, marginTop: SPACING.md },
+  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  bientotBadge:    { backgroundColor: COLORS.warning, borderRadius: RADIUS.pill, paddingHorizontal: 8, paddingVertical: 2, marginTop: SPACING.md, marginBottom: SPACING.sm },
+  bientotBadgeText:{ fontSize: 10, fontWeight: '800', color: '#000' },
+
+  // Card générique
+  card: {
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
     borderWidth: 1,
-    borderColor: '#1E2F48',
+    borderColor: COLORS.border,
   },
-  questHeader:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  questTag:      { ...FONTS.xs, color: '#FFFFFF', fontWeight: '800', letterSpacing: 0.8 },
-  questDoneTag:  { ...FONTS.xs, color: COLORS.success, fontWeight: '800', letterSpacing: 0.8 },
-  questTitle:    { ...FONTS.body, color: '#FFFFFF', fontWeight: '600', marginBottom: SPACING.sm },
-  questBarTrack: { height: 12, borderRadius: RADIUS.pill, backgroundColor: '#1E2F48', overflow: 'hidden', marginBottom: 6 },
-  questBarFill:  { height: '100%', borderRadius: RADIUS.pill, backgroundColor: '#FFFFFF' },
-  questProgress: { ...FONTS.xs, color: '#8A9BB5', fontWeight: '700', textAlign: 'right' },
 
-  weekCard:   { backgroundColor: '#162034', borderRadius: RADIUS.lg, padding: SPACING.md, marginBottom: SPACING.lg, borderWidth: 1, borderColor: '#1E2F48' },
-  weekHeader: { marginBottom: SPACING.sm },
-  weekTitle:  { ...FONTS.h3, color: '#FFFFFF' },
+  // Série semaine
   weekRow:    { flexDirection: 'row', justifyContent: 'space-between' },
-  weekDayCol: { alignItems: 'center', gap: 4 },
-  weekDayLetter:   { ...FONTS.xs, color: '#8A9BB5', fontWeight: '700' },
-  weekCircle:      { width: 36, height: 36, borderRadius: 18, backgroundColor: '#1E2F48', alignItems: 'center', justifyContent: 'center' },
-  weekCircleDone:  { backgroundColor: '#FFFFFF' },
-  weekCircleToday: { borderWidth: 2, borderColor: '#FFFFFF', backgroundColor: '#0E1829' },
-  weekCircleCheck: { color: '#0E1829', fontSize: 16, fontWeight: '900' },
-  weekCircleDot:   { color: '#4A5A6E', fontSize: 20 },
+  weekCol:    { alignItems: 'center', gap: 6 },
+  weekLetter: { fontSize: 11, fontWeight: '700', color: COLORS.textSecondary },
+  weekCircle: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  weekCircleDone:     { backgroundColor: COLORS.success },
+  weekCircleToday:    { borderWidth: 2, borderColor: '#F0F4FF', backgroundColor: 'transparent' },
+  weekCircleText:     { fontSize: 16, color: COLORS.textSecondary, fontWeight: '700' },
+  weekCircleTextDone: { color: '#fff' },
 
-  actions: { gap: SPACING.sm, marginBottom: SPACING.xl },
-  footer:  { ...FONTS.sm, color: '#4A5A6E', textAlign: 'center', marginTop: SPACING.md },
+  // Grille outils
+  grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginBottom: SPACING.sm },
+  gridCard: {
+    width: '47.5%',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  gridCardDisabled: { opacity: 0.45 },
+  gridIcon:  { fontSize: 28, marginBottom: 8 },
+  gridLabel: { fontSize: 14, fontWeight: '800', color: COLORS.text, marginBottom: 2 },
+  gridSub:   { fontSize: 12, color: COLORS.textSecondary },
+  disabledText: { color: COLORS.textDisabled },
 });

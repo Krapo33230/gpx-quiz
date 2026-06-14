@@ -191,7 +191,7 @@ export default function App() {
     const init = async () => {
       await Promise.all([
         initPurchases(),
-        new Promise(resolve => setTimeout(resolve, 1800)), // durée minimum du splash
+        new Promise(resolve => setTimeout(resolve, 2800)), // durée minimum du splash
       ]);
       setInitialRoute('Welcome');
     };

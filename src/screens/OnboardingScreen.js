@@ -221,15 +221,13 @@ export default function OnboardingScreen({ navigation, route }) {
               >
                 <Text style={styles.backText}>←</Text>
               </TouchableOpacity>
-              <View style={styles.progressWrap}>
-                <View style={styles.progressTrack}>
-                  <LinearGradient
-                    colors={['#002395', '#F0F4FF', '#EF4135']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={[styles.progressFill, { width: `${progress}%` }]}
-                  />
-                </View>
+              <View style={styles.progressTrack}>
+                <LinearGradient
+                  colors={['#002395', '#F0F4FF', '#EF4135']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={[styles.progressFill, { width: `${progress}%` }]}
+                />
                 <Text style={styles.progressPct}>{Math.round(progress)}%</Text>
               </View>
             </View>
@@ -807,10 +805,9 @@ const styles = StyleSheet.create({
   },
   backBtn:  { width: 32, alignItems: 'center', justifyContent: 'center' },
   backText: { fontSize: 22, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
-  progressWrap:  { flex: 1, gap: 4 },
-  progressTrack: { height: 14, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
-  progressFill:  { height: '100%' },
-  progressPct:   { fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.5)', textAlign: 'right' },
+  progressTrack: { flex: 1, height: 20, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', justifyContent: 'center' },
+  progressFill:  { ...StyleSheet.absoluteFillObject, height: '100%' },
+  progressPct:   { fontSize: 11, fontWeight: '900', color: '#fff', textAlign: 'center', zIndex: 1 },
 
   centerFull: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.xl },
   stepWrap:   { flex: 1, paddingHorizontal: SPACING.lg },

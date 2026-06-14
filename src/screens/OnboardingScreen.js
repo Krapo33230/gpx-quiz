@@ -222,12 +222,7 @@ export default function OnboardingScreen({ navigation, route }) {
                 <Text style={styles.backText}>←</Text>
               </TouchableOpacity>
               <View style={styles.progressTrack}>
-                <LinearGradient
-                  colors={['#002395', '#F0F4FF', '#EF4135']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={[styles.progressFill, { width: `${progress}%` }]}
-                />
+                <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: '#F0F4FF' }]} />
                 <Text style={styles.progressPct}>{Math.round(progress)}%</Text>
               </View>
             </View>

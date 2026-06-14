@@ -55,7 +55,7 @@ const s = StyleSheet.create({
     marginBottom: 12,
   },
   title: {
-    fontSize: 42,
+    fontSize: 30,
     fontWeight: '900',
     color: '#F0F4FF',
     letterSpacing: -0.5,

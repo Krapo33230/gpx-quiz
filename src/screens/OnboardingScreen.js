@@ -221,11 +221,17 @@ export default function OnboardingScreen({ navigation, route }) {
               >
                 <Text style={styles.backText}>←</Text>
               </TouchableOpacity>
-              {step > 0 && (
+              <View style={styles.progressWrap}>
                 <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${progress}%` }]} />
+                  <LinearGradient
+                    colors={['#002395', '#F0F4FF', '#EF4135']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[styles.progressFill, { width: `${progress}%` }]}
+                  />
                 </View>
-              )}
+                <Text style={styles.progressPct}>{Math.round(progress)}%</Text>
+              </View>
             </View>
           )}
 
@@ -801,8 +807,10 @@ const styles = StyleSheet.create({
   },
   backBtn:  { width: 32, alignItems: 'center', justifyContent: 'center' },
   backText: { fontSize: 22, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
-  progressTrack: { flex: 1, height: 8, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
-  progressFill:  { height: '100%', borderRadius: RADIUS.pill, backgroundColor: ACCENT },
+  progressWrap:  { flex: 1, gap: 4 },
+  progressTrack: { height: 14, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden' },
+  progressFill:  { height: '100%' },
+  progressPct:   { fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.5)', textAlign: 'right' },
 
   centerFull: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.xl },
   stepWrap:   { flex: 1, paddingHorizontal: SPACING.lg },

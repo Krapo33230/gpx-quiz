@@ -129,13 +129,6 @@ export default function InfoScreen() {
               </View>
             </View>
           ))}
-          <TouchableOpacity
-            style={styles.officialBtn}
-            onPress={() => Linking.openURL('https://concours.interieur.gouv.fr')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.officialBtnText}>🌐  Voir le site officiel</Text>
-          </TouchableOpacity>
         </View>
 
         {/* ── Étapes ── */}
@@ -185,12 +178,12 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 32 },
 
   pageTitle:    { fontSize: 28, fontWeight: '800', color: '#FFFFFF', marginTop: 24, marginBottom: 4 },
-  pageSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 28, fontWeight: '600', letterSpacing: 0.4 },
+  pageSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginBottom: 28, fontWeight: '600', letterSpacing: 0.4 },
 
   sectionTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(255,255,255,0.75)',
     letterSpacing: 0.5,
     marginBottom: 12,
     marginTop: 8,
@@ -215,16 +208,7 @@ const styles = StyleSheet.create({
   dateContent: { flex: 1 },
   dateLabel:   { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.45)', marginBottom: 3, letterSpacing: 0.4 },
   dateValue:   { fontSize: 15, fontWeight: '700', color: '#FFFFFF', lineHeight: 20 },
-  dateSub:     { fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 2 },
-  officialBtn: {
-    margin: 12,
-    backgroundColor: '#1A3F7A',
-    borderRadius: RADIUS.md,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  officialBtnText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF' },
-
+  dateSub:     { fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 2 },
   // Étapes
   etapeRow: {
     flexDirection: 'row',
@@ -234,7 +218,7 @@ const styles = StyleSheet.create({
   etapeLeft: { alignItems: 'center', width: 32 },
   etapeNum: {
     width: 32, height: 32, borderRadius: 16,
-    backgroundColor: '#1A3F7A',
+    backgroundColor: '#1A4AFF',
     alignItems: 'center', justifyContent: 'center',
   },
   etapeNumText: { fontSize: 14, fontWeight: '900', color: '#FFFFFF' },
@@ -250,7 +234,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   etapeTitre:  { fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  etapeDetail: { fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 19 },
+  etapeDetail: { fontSize: 13, color: 'rgba(255,255,255,0.65)', lineHeight: 19 },
 
   // FAQ
   faqCard: {
@@ -268,7 +252,7 @@ const styles = StyleSheet.create({
   faqHeader:  { flexDirection: 'row', alignItems: 'center', gap: 8 },
   faqQ:       { flex: 1, fontSize: 14, fontWeight: '700', color: '#FFFFFF', lineHeight: 20 },
   faqChevron: { fontSize: 11, color: 'rgba(255,255,255,0.35)' },
-  faqR:       { fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 20, marginTop: 10 },
+  faqR:       { fontSize: 13, color: 'rgba(255,255,255,0.65)', lineHeight: 20, marginTop: 10 },
 
   // Bouton JO
   joBtn: {

@@ -50,7 +50,6 @@ import LevelUpScreen   from './src/screens/LevelUpScreen';
 import LexiqueScreen   from './src/screens/LexiqueScreen';
 import WelcomeScreen    from './src/screens/WelcomeScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
-import DailyStartScreen from './src/screens/DailyStartScreen';
 import PlusScreen       from './src/screens/PlusScreen';
 import InfoScreen            from './src/screens/InfoScreen';
 import CGUScreen             from './src/screens/CGUScreen';
@@ -195,7 +194,7 @@ await Promise.all([
         initPurchases(),
         new Promise(resolve => setTimeout(resolve, 4000)), // durée minimum du splash
       ]);
-      setInitialRoute('Onboarding'); // DEV
+      setInitialRoute('Main'); // DEV
     };
     init();
   }, []);
@@ -218,7 +217,6 @@ await Promise.all([
           {/* ── 0. Welcome / Onboarding ─────────────────────────── */}
           <Stack.Screen name="Welcome"    component={WelcomeScreen} />
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-          <Stack.Screen name="DailyStart" component={DailyStartScreen} />
 
           {/* ── 1. Main (bottom tabs) ───────────────────────────── */}
           <Stack.Screen name="Main" component={MainTabs} />
@@ -259,7 +257,7 @@ await Promise.all([
             component={LevelUpScreen}
             options={{
               headerShown: false,
-              cardStyle: { backgroundColor: '#FFF8E1' },
+              cardStyle: { backgroundColor: '#0F0F0F' },
               cardStyleInterpolator: bottomSlideInterpolator,
             }}
           />

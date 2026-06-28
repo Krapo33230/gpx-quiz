@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { CATEGORIES } from '../data/questions';
 
@@ -194,19 +195,22 @@ export default function ChoixModeScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         {/* Concours blanc — carte vedette pleine largeur */}
-        <TouchableOpacity
-          style={styles.featuredCard}
-          onPress={() => handleSelectMode(CONCOURS_BLANC)}
-          activeOpacity={0.85}
-        >
-          <View style={styles.featuredLeft}>
-            <Text style={styles.featuredEmoji}>{CONCOURS_BLANC.emoji}</Text>
-            <View>
-              <Text style={styles.featuredTitre}>{CONCOURS_BLANC.titre}</Text>
-              <Text style={styles.featuredDesc}>{CONCOURS_BLANC.description}</Text>
+        <TouchableOpacity onPress={() => handleSelectMode(CONCOURS_BLANC)} activeOpacity={0.85}>
+          <LinearGradient
+            colors={['#1A4AFF', '#002395']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.featuredCard}
+          >
+            <View style={styles.featuredLeft}>
+              <Text style={styles.featuredEmoji}>{CONCOURS_BLANC.emoji}</Text>
+              <View>
+                <Text style={styles.featuredTitre}>{CONCOURS_BLANC.titre}</Text>
+                <Text style={styles.featuredDesc}>{CONCOURS_BLANC.description}</Text>
+              </View>
             </View>
-          </View>
-          <Text style={styles.featuredArrow}>→</Text>
+            <Text style={styles.featuredArrow}>→</Text>
+          </LinearGradient>
         </TouchableOpacity>
 
         <View style={styles.grid}>
@@ -265,7 +269,7 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
   },
   titre: { ...FONTS.h2, color: '#FFFFFF', marginBottom: 4 },
-  sousTitre: { ...FONTS.sm, color: 'rgba(255,255,255,0.55)' },
+  sousTitre: { ...FONTS.sm, color: 'rgba(255,255,255,0.7)' },
 
   scroll: {
     paddingHorizontal: SPACING.md,
@@ -298,15 +302,12 @@ const styles = StyleSheet.create({
   cardDuree: { ...FONTS.xs, color: 'rgba(255,255,255,0.4)', fontWeight: '600' },
 
   featuredCard: {
-    backgroundColor: '#002395',
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: SPACING.md,
-    borderWidth: 1,
-    borderColor: '#1A4AFF',
   },
   featuredLeft:  { flexDirection: 'row', alignItems: 'center', gap: SPACING.md, flex: 1 },
   featuredEmoji: { fontSize: 32 },

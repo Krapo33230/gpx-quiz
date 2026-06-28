@@ -3,11 +3,18 @@ import {
   View, Text, StyleSheet, Animated, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, FONTS, RADIUS, SPACING } from '../theme/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS, RADIUS, SPACING } from '../theme/colors';
 import {
   getStats, getStreak, getXP, getLevelInfo,
   getDailyCount, getDailyTime, getWeeklyScores, getObjectif, getUserName,
 } from '../utils/storage';
+
+const QUICK_MODES = [
+  { id: 'flash',    emoji: '⚡', titre: 'Flash',          description: '5q · ~3 min',  couleur: '#F59E0B', categorie: null },
+  { id: 'complet',  emoji: '📋', titre: 'Complet',        description: '20q · ~15 min', couleur: '#1A4AFF', categorie: null },
+  { id: 'concours', emoji: '🏛️', titre: 'Concours Blanc', description: '40q · 45 min',  couleur: '#7C3AED', categorie: null },
+];
 
 export default function AccueilScreen({ navigation }) {
   const [streak,     setStreak]     = useState(0);
@@ -17,6 +24,7 @@ export default function AccueilScreen({ navigation }) {
   const [dailyTime,  setDailyTime]  = useState(0);
   const [weekDays,   setWeekDays]   = useState([]);
   const [userName,   setUserName]   = useState('');
+  const [stats,      setStats]      = useState(null);
 
   const fade  = useRef(new Animated.Value(0)).current;
   const slide = useRef(new Animated.Value(20)).current;
@@ -33,6 +41,7 @@ export default function AccueilScreen({ navigation }) {
     setWeekDays(buildWeekRow(weekly));
     setUserName(name);
     setDailyTime(time);
+    setStats(s);
   }
 
   useEffect(() => {
@@ -52,19 +61,9 @@ export default function AccueilScreen({ navigation }) {
   const timePct     = Math.min((dailyTime / goalSeconds) * 100, 100);
   const timeDone    = dailyTime >= goalSeconds;
 
-  const OUTILS = [
-    { icon: '📝', label: 'Quiz',           sub: 'Entraîne-toi',        route: 'ChoixMode' },
-    { icon: '🎯', label: 'Auto-éval',      sub: 'Teste ton niveau',    route: 'AutoEval'  },
-    { icon: '📖', label: 'Lexique',        sub: 'Termes clés',         route: 'Lexique'   },
-    { icon: '📊', label: 'Statistiques',   sub: 'Tes performances',    route: 'Resultats' },
-  ];
-
-  const BIENTOT = [
-    { icon: '📅', label: 'Mon programme',        sub: 'Plan de révision personnalisé' },
-    { icon: '🏋️', label: 'Exercices quotidiens', sub: 'Entraînement du jour'          },
-    { icon: '🗓️', label: 'Agenda',               sub: 'Dates clés du concours'        },
-    { icon: '📰', label: 'Fiches de cours',      sub: 'Résumés par matière'           },
-  ];
+  const scoreMoyen = stats && stats.totalQuestions > 0
+    ? Math.round((stats.totalCorrect / stats.totalQuestions) * 100)
+    : null;
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
@@ -73,35 +72,93 @@ export default function AccueilScreen({ navigation }) {
         {/* ── Header ── */}
         <Animated.View style={[s.header, { opacity: fade, transform: [{ translateY: slide }] }]}>
           <View style={s.headerLeft}>
-            <Text style={s.hello}>Bonjour{userName ? `, ${userName}` : ''} 👋</Text>
+            <Text style={s.hello}>{userName || 'Recrue'}</Text>
             <Text style={s.helloSub}>
               {streak > 0 ? `🔥 ${streak} jour${streak > 1 ? 's' : ''} de suite` : 'Prêt à réviser ?'}
             </Text>
           </View>
-          <TouchableOpacity style={s.xpChip} onPress={() => navigation.navigate('Niveaux')}>
-            <Text style={s.xpChipXP}>⚡ {xpInfo?.xp ?? 0} XP</Text>
-            {xpInfo && <Text style={s.xpChipLevel}>{xpInfo.level.emoji} {xpInfo.level.name}</Text>}
-          </TouchableOpacity>
+          {xpInfo && (
+            <TouchableOpacity
+              style={[s.gradeBadge, { borderColor: xpInfo.level.color }]}
+              onPress={() => navigation.navigate('Niveaux')}
+              activeOpacity={0.8}
+            >
+              <Text style={s.gradeEmoji}>{xpInfo.level.emoji}</Text>
+              <Text style={[s.gradeName, { color: xpInfo.level.color }]}>{xpInfo.level.name}</Text>
+            </TouchableOpacity>
+          )}
         </Animated.View>
 
-        {/* ── Hero — Quiz du jour ── */}
-        <Animated.View style={[s.heroCard, { opacity: fade, transform: [{ translateY: slide }] }]}>
-          <View style={s.heroTop}>
-            <View>
-              <Text style={s.heroLabel}>QUIZ DU JOUR</Text>
-              <Text style={s.heroTitle}>
-                {timeDone ? 'Objectif atteint ! 🎉' : `${dailyCount} question${dailyCount > 1 ? 's' : ''} aujourd'hui`}
-              </Text>
+        {/* ── Mission du jour ── */}
+        <Animated.View style={{ opacity: fade, transform: [{ translateY: slide }], marginBottom: SPACING.lg }}>
+          <LinearGradient
+            colors={['#1A4AFF', '#002395']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.heroCard}
+          >
+            <View style={s.heroTop}>
+              <Text style={s.heroLabel}>MISSION DU JOUR</Text>
+              {timeDone && (
+                <View style={s.heroDoneBadge}>
+                  <Text style={s.heroDoneText}>✓ ACCOMPLI</Text>
+                </View>
+              )}
             </View>
-            {timeDone && <Text style={s.heroBadge}>✓</Text>}
+            <Text style={s.heroTitle}>
+              {timeDone
+                ? 'Objectif atteint ! 🎉'
+                : `${dailyCount} question${dailyCount > 1 ? 's' : ''} aujourd'hui`}
+            </Text>
+            <View style={s.heroBarTrack}>
+              <View style={[s.heroBarFill, { width: `${timePct}%`, backgroundColor: timeDone ? COLORS.success : '#F0F4FF' }]} />
+            </View>
+            <Text style={s.heroBarLabel}>{Math.floor(dailyTime / 60)} / {dailyGoal} min</Text>
+            <TouchableOpacity style={s.heroBtn} onPress={() => navigation.navigate('ChoixMode')} activeOpacity={0.85}>
+              <Text style={s.heroBtnText}>🚀  Commencer l'entraînement</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </Animated.View>
+
+        {/* ── Stats row ── */}
+        <Animated.View style={[s.statsRow, { opacity: fade }]}>
+          <View style={s.statItem}>
+            <Text style={s.statNum}>🔥 {streak}</Text>
+            <Text style={s.statLabel}>Streak</Text>
           </View>
-          <View style={s.heroBarTrack}>
-            <View style={[s.heroBarFill, { width: `${timePct}%`, backgroundColor: timeDone ? COLORS.success : '#F0F4FF' }]} />
+          <View style={s.statSep} />
+          <View style={s.statItem}>
+            <Text style={s.statNum}>{stats?.totalQuestions ?? 0}</Text>
+            <Text style={s.statLabel}>Questions</Text>
           </View>
-          <Text style={s.heroBarLabel}>{Math.floor(dailyTime / 60)} / {dailyGoal} min</Text>
-          <TouchableOpacity style={s.heroBtn} onPress={() => navigation.navigate('ChoixMode')} activeOpacity={0.85}>
-            <Text style={s.heroBtnText}>🚀  Commencer l'entraînement</Text>
-          </TouchableOpacity>
+          <View style={s.statSep} />
+          <View style={s.statItem}>
+            <Text style={s.statNum}>{scoreMoyen !== null ? `${scoreMoyen}%` : '—'}</Text>
+            <Text style={s.statLabel}>Moy. score</Text>
+          </View>
+        </Animated.View>
+
+        {/* ── Accès rapide ── */}
+        <Animated.View style={{ opacity: fade }}>
+          <Text style={s.sectionTitle}>ACCÈS RAPIDE</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={s.quickScroll}
+          >
+            {QUICK_MODES.map(mode => (
+              <TouchableOpacity
+                key={mode.id}
+                style={[s.quickCard, { borderColor: mode.couleur + '55' }]}
+                onPress={() => navigation.navigate('Quiz', { mode })}
+                activeOpacity={0.8}
+              >
+                <Text style={s.quickEmoji}>{mode.emoji}</Text>
+                <Text style={s.quickTitle}>{mode.titre}</Text>
+                <Text style={s.quickSub}>{mode.description}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </Animated.View>
 
         {/* ── Série semaine ── */}
@@ -125,42 +182,6 @@ export default function AccueilScreen({ navigation }) {
           </View>
         </Animated.View>
 
-        {/* ── Mes outils ── */}
-        <Animated.View style={{ opacity: fade }}>
-          <Text style={s.sectionTitle}>MES OUTILS</Text>
-          <View style={s.grid}>
-            {OUTILS.map((item) => (
-              <TouchableOpacity
-                key={item.route}
-                style={s.gridCard}
-                onPress={() => navigation.navigate(item.route)}
-                activeOpacity={0.8}
-              >
-                <Text style={s.gridIcon}>{item.icon}</Text>
-                <Text style={s.gridLabel}>{item.label}</Text>
-                <Text style={s.gridSub}>{item.sub}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Animated.View>
-
-        {/* ── Bientôt ── */}
-        <Animated.View style={{ opacity: fade }}>
-          <View style={s.sectionTitleRow}>
-            <Text style={s.sectionTitle}>À VENIR</Text>
-            <View style={s.bientotBadge}><Text style={s.bientotBadgeText}>Bientôt</Text></View>
-          </View>
-          <View style={s.grid}>
-            {BIENTOT.map((item, i) => (
-              <View key={i} style={[s.gridCard, s.gridCardDisabled]}>
-                <Text style={[s.gridIcon, s.disabledText]}>{item.icon}</Text>
-                <Text style={[s.gridLabel, s.disabledText]}>{item.label}</Text>
-                <Text style={[s.gridSub, s.disabledText]}>{item.sub}</Text>
-              </View>
-            ))}
-          </View>
-        </Animated.View>
-
         <View style={{ height: SPACING.xxl }} />
       </ScrollView>
     </SafeAreaView>
@@ -177,9 +198,8 @@ function buildWeekRow(weeklyScores) {
 
 const s = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: COLORS.background },
-  scroll: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xxl },
+  scroll: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.sm, paddingBottom: SPACING.xxl },
 
-  // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -188,86 +208,79 @@ const s = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   headerLeft: { flex: 1 },
-  hello:    { fontSize: 22, fontWeight: '900', color: COLORS.text },
+  hello:    { fontSize: 26, fontWeight: '900', color: COLORS.text },
   helloSub: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
-  xpChip: {
-    backgroundColor: COLORS.surface,
+
+  gradeBadge: {
+    alignItems: 'center',
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderWidth: 1.5,
+    backgroundColor: COLORS.surface,
     minWidth: 72,
   },
-  xpChipXP:    { fontSize: 12, fontWeight: '900', color: COLORS.text },
-  xpChipLevel: { fontSize: 11, color: COLORS.textSecondary, marginTop: 2 },
+  gradeEmoji: { fontSize: 20 },
+  gradeName:  { fontSize: 11, fontWeight: '800', marginTop: 2, letterSpacing: 0.3 },
 
-  // Hero card
   heroCard: {
-    backgroundColor: COLORS.bleuFr,
     borderRadius: RADIUS.xl,
     padding: SPACING.lg,
-    marginBottom: SPACING.lg,
   },
-  heroTop:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: SPACING.md },
-  heroLabel: { fontSize: 11, fontWeight: '800', color: 'rgba(240,244,255,0.6)', letterSpacing: 1.5, marginBottom: 4 },
-  heroTitle: { fontSize: 18, fontWeight: '900', color: '#F0F4FF' },
-  heroBadge: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.success, textAlign: 'center', lineHeight: 32, fontSize: 16, fontWeight: '900', color: '#fff', overflow: 'hidden' },
-  heroBarTrack: { height: 8, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.15)', overflow: 'hidden', marginBottom: 6 },
+  heroTop:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  heroLabel:    { fontSize: 11, fontWeight: '800', color: 'rgba(240,244,255,0.6)', letterSpacing: 1.5 },
+  heroDoneBadge:{ backgroundColor: COLORS.success, borderRadius: RADIUS.pill, paddingHorizontal: 10, paddingVertical: 3 },
+  heroDoneText: { fontSize: 10, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
+  heroTitle:    { fontSize: 20, fontWeight: '900', color: '#F0F4FF', marginBottom: SPACING.md },
+  heroBarTrack: { height: 6, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.15)', overflow: 'hidden', marginBottom: 6 },
   heroBarFill:  { height: '100%', borderRadius: RADIUS.pill },
   heroBarLabel: { fontSize: 12, color: 'rgba(240,244,255,0.6)', marginBottom: SPACING.md },
-  heroBtn: {
-    backgroundColor: '#F0F4FF',
-    borderRadius: RADIUS.pill,
-    paddingVertical: 14,
-    alignItems: 'center',
+  heroBtn:      { backgroundColor: '#F0F4FF', borderRadius: RADIUS.pill, paddingVertical: 14, alignItems: 'center' },
+  heroBtnText:  { fontSize: 15, fontWeight: '900', color: COLORS.bleuFr },
+
+  statsRow: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingVertical: 16,
+    marginBottom: SPACING.lg,
   },
-  heroBtnText: { fontSize: 15, fontWeight: '900', color: COLORS.bleuFr },
+  statItem:  { flex: 1, alignItems: 'center' },
+  statNum:   { fontSize: 20, fontWeight: '900', color: COLORS.text, marginBottom: 4 },
+  statLabel: { fontSize: 11, color: COLORS.textSecondary, fontWeight: '600' },
+  statSep:   { width: 1, backgroundColor: COLORS.border },
 
-  // Section title
-  sectionTitle:    { fontSize: 12, fontWeight: '800', color: COLORS.textSecondary, letterSpacing: 1.2, marginBottom: SPACING.sm, marginTop: SPACING.md },
-  sectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
-  bientotBadge:    { backgroundColor: COLORS.warning, borderRadius: RADIUS.pill, paddingHorizontal: 8, paddingVertical: 2, marginTop: SPACING.md, marginBottom: SPACING.sm },
-  bientotBadgeText:{ fontSize: 10, fontWeight: '800', color: '#000' },
+  sectionTitle: { fontSize: 12, fontWeight: '800', color: COLORS.textSecondary, letterSpacing: 1.2, marginBottom: SPACING.sm, marginTop: SPACING.lg },
+  quickScroll:  { gap: 12, paddingVertical: 4, paddingRight: SPACING.lg },
+  quickCard: {
+    width: 155,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    borderWidth: 1.5,
+    gap: 6,
+  },
+  quickEmoji: { fontSize: 28 },
+  quickTitle: { fontSize: 15, fontWeight: '900', color: COLORS.text },
+  quickSub:   { fontSize: 11, color: COLORS.textSecondary, lineHeight: 16 },
 
-  // Card générique
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
+    marginTop: SPACING.lg,
     marginBottom: SPACING.sm,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-
-  // Série semaine
-  weekRow:    { flexDirection: 'row', justifyContent: 'space-between' },
-  weekCol:    { alignItems: 'center', gap: 6 },
-  weekLetter: { fontSize: 11, fontWeight: '700', color: COLORS.textSecondary },
-  weekCircle: {
-    width: 36, height: 36, borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    alignItems: 'center', justifyContent: 'center',
-  },
+  weekRow:            { flexDirection: 'row', justifyContent: 'space-between' },
+  weekCol:            { alignItems: 'center', gap: 6 },
+  weekLetter:         { fontSize: 11, fontWeight: '700', color: COLORS.textSecondary },
+  weekCircle:         { width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
   weekCircleDone:     { backgroundColor: COLORS.success },
   weekCircleToday:    { borderWidth: 2, borderColor: '#F0F4FF', backgroundColor: 'transparent' },
   weekCircleText:     { fontSize: 16, color: COLORS.textSecondary, fontWeight: '700' },
   weekCircleTextDone: { color: '#fff' },
-
-  // Grille outils
-  grid:     { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginBottom: SPACING.sm },
-  gridCard: {
-    width: '47.5%',
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  gridCardDisabled: { opacity: 0.45 },
-  gridIcon:  { fontSize: 28, marginBottom: 8 },
-  gridLabel: { fontSize: 14, fontWeight: '800', color: COLORS.text, marginBottom: 2 },
-  gridSub:   { fontSize: 12, color: COLORS.textSecondary },
-  disabledText: { color: COLORS.textDisabled },
 });

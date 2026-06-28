@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
   },
   backBtn:       { width: 32, alignItems: 'center', justifyContent: 'center' },
   backText:      { fontSize: 22, color: 'rgba(255,255,255,0.6)', fontWeight: '600' },
-  progressTrack: { flex: 1, height: 20, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', justifyContent: 'center' },
+  progressTrack: { flex: 1, height: 5, borderRadius: RADIUS.pill, backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', justifyContent: 'center' },
   progressFill:  { ...StyleSheet.absoluteFillObject, height: '100%' },
 
   centerFull: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.xl },
@@ -179,7 +179,7 @@ export const styles = StyleSheet.create({
   notifNoBtnText:  { ...FONTS.body, color: 'rgba(255,255,255,0.25)', fontWeight: '600' },
 
   footer:          { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xl, gap: SPACING.sm },
-  cta:             { backgroundColor: '#002395', borderRadius: RADIUS.pill, paddingVertical: 18, alignItems: 'center' },
+  cta:             { borderRadius: RADIUS.pill, paddingVertical: 18, alignItems: 'center' },
   ctaDisabled:     { backgroundColor: '#1C1C1E', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   ctaText:         { fontSize: 16, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1 },
   ctaTextDisabled: { color: 'rgba(255,255,255,0.3)' },

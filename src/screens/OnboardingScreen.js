@@ -22,7 +22,7 @@ import {
 
 export default function OnboardingScreen({ navigation, route }) {
   const returning = route?.params?.returning ?? false;
-  const [step,         setStep]         = useState(9); // DEV — remettre: returning ? 10 : 0
+  const [step,         setStep]         = useState(0); // DEV
   const [showCta,      setShowCta]      = useState(false);
   const [introIndex,   setIntroIndex]   = useState(0);
   const [name,         setName]         = useState('');
@@ -387,7 +387,7 @@ export default function OnboardingScreen({ navigation, route }) {
                 <View style={{ width: '100%', gap: 4 }}>
                   <Cta label="ACTIVER LES RAPPELS →" onPress={handleNotifYes} />
                   <TouchableOpacity style={{ paddingVertical: 14, alignItems: 'center' }} onPress={() => animStep(10)} activeOpacity={0.7}>
-                    <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.25)', fontWeight: '600' }}>Passer sans rappels</Text>
+                    <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', fontWeight: '600' }}>Passer sans rappels</Text>
                   </TouchableOpacity>
                 </View>
               )}

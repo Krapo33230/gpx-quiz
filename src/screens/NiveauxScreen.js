@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   glowCenter: { position: 'absolute', top: SCREEN_H * 0.2, left: -60, right: -60, height: SCREEN_H * 0.5 },
   header: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.md },
   titre:     { ...FONTS.h1, color: '#FFFFFF' },
-  sousTitre: { ...FONTS.sm, color: 'rgba(255,255,255,0.55)', marginTop: 2 },
+  sousTitre: { ...FONTS.sm, color: 'rgba(255,255,255,0.7)', marginTop: 2 },
 
   scroll: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.sm },
 

@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { QUESTIONS, CATEGORIES } from '../data/questions';
@@ -306,14 +307,20 @@ function ResultsPhase({ answers, navigation, fromOnboarding }) {
 
           {/* ── CTA ── */}
           <TouchableOpacity
-            style={rs.cta}
             onPress={() => fromOnboarding
               ? navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
               : navigation.navigate('Main', { screen: 'Accueil' })
             }
             activeOpacity={0.85}
           >
-            <Text style={rs.ctaText}>REJOINDRE LA FORMATION →</Text>
+            <LinearGradient
+              colors={['#1A4AFF', '#002395']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={rs.cta}
+            >
+              <Text style={rs.ctaText}>REJOINDRE LA FORMATION →</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <View style={{ height: 32 }} />
@@ -565,12 +572,9 @@ const rs = StyleSheet.create({
   priorityDesc:  { fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 19 },
 
   cta: {
-    backgroundColor: '#002395',
     borderRadius: 50,
     paddingVertical: 18,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#1A4AFF',
   },
   ctaText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 0.8 },
 });

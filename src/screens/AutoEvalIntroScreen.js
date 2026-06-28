@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { RADIUS, SPACING } from '../theme/colors';
 import { TricolorMark } from '../components/ui';
 
@@ -66,8 +67,15 @@ export default function AutoEvalIntroScreen({ navigation, route }) {
         </Animated.View>
 
         <View style={s.footer}>
-          <TouchableOpacity style={s.cta} onPress={() => navigation.replace('AutoEval', { fromOnboarding })} activeOpacity={0.85}>
-            <Text style={s.ctaText}>COMMENCER L'AUTO-ÉVALUATION →</Text>
+          <TouchableOpacity onPress={() => navigation.replace('AutoEval', { fromOnboarding })} activeOpacity={0.85}>
+            <LinearGradient
+              colors={['#1A4AFF', '#002395']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={s.cta}
+            >
+              <Text style={s.ctaText}>COMMENCER L'AUTO-ÉVALUATION →</Text>
+            </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity style={s.skip} onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })} activeOpacity={0.7}>
             <Text style={s.skipText}>Passer et accéder à l'appli</Text>
@@ -100,7 +108,7 @@ const s = StyleSheet.create({
   },
   subtitle: {
     fontSize: 15,
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(255,255,255,0.55)',
     textAlign: 'center',
     lineHeight: 22,
     marginBottom: 28,
@@ -155,14 +163,11 @@ const s = StyleSheet.create({
     paddingBottom: SPACING.xl,
   },
   cta: {
-    backgroundColor: '#002395',
     borderRadius: RADIUS.pill,
     paddingVertical: 18,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#1A4AFF',
   },
   ctaText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 0.8 },
   skip:     { paddingVertical: 14, alignItems: 'center' },
-  skipText: { fontSize: 14, color: 'rgba(255,255,255,0.3)', fontWeight: '600' },
+  skipText: { fontSize: 14, color: 'rgba(255,255,255,0.45)', fontWeight: '600' },
 });

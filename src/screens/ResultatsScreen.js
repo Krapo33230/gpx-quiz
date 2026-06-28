@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { StatCard } from '../components/ui';
 import {
@@ -171,9 +172,8 @@ export default function ResultatsScreen({ navigation, route }) {
         ) : (
           <>
             {/* ── Taux de réussite hero ── */}
-            <Animated.View
-              style={[styles.heroCard, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}
-            >
+            <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }], marginBottom: SPACING.md }}>
+              <LinearGradient colors={['#1A4AFF', '#002395']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.heroCard}>
               <Text style={styles.heroLabel}>TAUX DE RÉUSSITE GÉNÉRAL</Text>
               <Text style={[styles.heroValue, { color: getGaugeColor(tauxReussite) }]}>
                 {tauxReussite} %
@@ -199,6 +199,7 @@ export default function ResultatsScreen({ navigation, route }) {
                   <Text style={styles.heroMiniLbl}>meilleur score</Text>
                 </View>
               </View>
+              </LinearGradient>
             </Animated.View>
 
             {/* ── Tu peux le faire ── */}
@@ -209,12 +210,10 @@ export default function ResultatsScreen({ navigation, route }) {
                 <Text style={styles.motivTitle}>{getMotivPhrase(tauxReussite)}</Text>
                 <Text style={styles.motivSub}>Lance une nouvelle session maintenant →</Text>
               </View>
-              <TouchableOpacity
-                style={styles.motivBtn}
-                onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.motivBtnText}>→</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })} activeOpacity={0.85}>
+                <LinearGradient colors={['#1A4AFF', '#002395']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.motivBtn}>
+                  <Text style={styles.motivBtnText}>→</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
 
@@ -226,10 +225,10 @@ export default function ResultatsScreen({ navigation, route }) {
                   { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
                 ]}
               >
-                <View style={styles.streakBox}>
+                <LinearGradient colors={['#1A4AFF', '#002395']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.streakBox}>
                   <Text style={styles.streakNum}>{streak}</Text>
                   <Text style={styles.streakLbl}>jours de suite</Text>
-                </View>
+                </LinearGradient>
                 <View style={[styles.streakBox, styles.streakBoxAlt]}>
                   <Text style={styles.streakNumAlt}>{bestStreak}</Text>
                   <Text style={styles.streakLblAlt}>meilleur record</Text>
@@ -402,8 +401,10 @@ function EmptyState({ onStart }) {
       <Text style={styles.emptyEmoji}>📊</Text>
       <Text style={styles.emptyTitle}>Pas encore de données</Text>
       <Text style={styles.emptyDesc}>Commencez votre premier quiz pour voir vos statistiques ici !</Text>
-      <TouchableOpacity onPress={onStart} style={styles.emptyBtn}>
-        <Text style={styles.emptyBtnText}>Commencer maintenant</Text>
+      <TouchableOpacity onPress={onStart} activeOpacity={0.85}>
+        <LinearGradient colors={['#1A4AFF', '#002395']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.emptyBtn}>
+          <Text style={styles.emptyBtnText}>Commencer maintenant</Text>
+        </LinearGradient>
       </TouchableOpacity>
     </View>
   );
@@ -446,11 +447,8 @@ const styles = StyleSheet.create({
 
   // Hero taux de réussite
   heroCard: {
-    backgroundColor: COLORS.primary,
     borderRadius: RADIUS.xl,
     padding: SPACING.lg,
-    marginBottom: SPACING.md,
-    ...SHADOWS.card,
   },
   heroLabel: {
     fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.6)',
@@ -488,10 +486,8 @@ const styles = StyleSheet.create({
   motivSub:     { ...FONTS.sm, color: COLORS.textSecondary, lineHeight: 18 },
   motivBtn: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: COLORS.primary,
     alignItems: 'center', justifyContent: 'center',
     marginLeft: SPACING.md,
-    ...SHADOWS.button,
   },
   motivBtnText: { fontSize: 20, color: '#FFFFFF', fontWeight: '700' },
 
@@ -503,7 +499,6 @@ const styles = StyleSheet.create({
   },
   streakBox: {
     flex: 1,
-    backgroundColor: COLORS.primary,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     alignItems: 'center',
@@ -589,12 +584,10 @@ const styles = StyleSheet.create({
   emptyTitle: { ...FONTS.h2, color: COLORS.text, marginBottom: SPACING.sm },
   emptyDesc:  { ...FONTS.body, color: COLORS.textSecondary, textAlign: 'center', paddingHorizontal: SPACING.xl },
   emptyBtn: {
-    backgroundColor: COLORS.primary,
     borderRadius: RADIUS.pill,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.xl,
     marginTop: SPACING.xl,
-    ...SHADOWS.button,
   },
   emptyBtnText: { ...FONTS.h3, color: COLORS.white },
 });

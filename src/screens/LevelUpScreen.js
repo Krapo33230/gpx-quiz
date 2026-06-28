@@ -4,6 +4,7 @@ import {
   TouchableOpacity, Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -131,15 +132,20 @@ export default function LevelUpScreen({ navigation, route }) {
             { transform: [{ scale: badgeScale }, { translateY: badgeBounce }] },
           ]}
         >
-          <View style={[styles.badge, { backgroundColor: newLevel.color }]}>
+          <LinearGradient
+            colors={newLevel.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.badge}
+          >
             <Text style={styles.badgeEmoji}>{newLevel.emoji}</Text>
-          </View>
+          </LinearGradient>
           <View style={[styles.badgeRing, { borderColor: newLevel.color }]} />
         </Animated.View>
 
         {/* ── Texte ── */}
         <Animated.View style={[styles.textBlock, { opacity: textFade }]}>
-          <Text style={styles.levelUp}>NOUVEAU GRADE !</Text>
+          <Text style={[styles.levelUp, { color: newLevel.color }]}>NOUVEAU GRADE !</Text>
           <Text style={[styles.levelName, { color: newLevel.color }]}>{newLevel.name}</Text>
           <Text style={styles.levelDesc}>{newLevel.emoji} Tu passes au grade suivant — félicitations !</Text>
 
@@ -148,7 +154,7 @@ export default function LevelUpScreen({ navigation, route }) {
               <Text style={styles.statVal}>+{xpGained} XP</Text>
               <Text style={styles.statLbl}>gagnés cette session</Text>
             </View>
-            <View style={[styles.statBox, styles.statBoxAlt]}>
+            <View style={[styles.statBox, styles.statBoxAlt, { borderColor: newLevel.color + '60' }]}>
               <Text style={[styles.statVal, { color: newLevel.color }]}>{totalXP} XP</Text>
               <Text style={styles.statLbl}>total</Text>
             </View>
@@ -170,7 +176,7 @@ export default function LevelUpScreen({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF8E1' },
+  container: { flex: 1, backgroundColor: '#0F0F0F' },
   inner:     { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: SPACING.xl },
 
   confetti: { position: 'absolute', top: 0 },
@@ -193,22 +199,23 @@ const styles = StyleSheet.create({
   badgeEmoji: { fontSize: 60 },
 
   textBlock: { alignItems: 'center', marginBottom: SPACING.xl },
-  levelUp:   { fontSize: 28, fontWeight: '900', color: COLORS.text, letterSpacing: 1, marginBottom: SPACING.xs },
+  levelUp:   { fontSize: 28, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1, marginBottom: SPACING.xs },
   levelName: { fontSize: 36, fontWeight: '900', marginBottom: SPACING.sm },
-  levelDesc: { ...FONTS.body, color: COLORS.textSecondary, textAlign: 'center', marginBottom: SPACING.xl },
+  levelDesc: { ...FONTS.body, color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginBottom: SPACING.xl },
 
   statsRow: { flexDirection: 'row', gap: SPACING.md },
   statBox: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#1C1C1E',
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     alignItems: 'center',
-    ...SHADOWS.card,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
   },
-  statBoxAlt: { backgroundColor: COLORS.white },
-  statVal:    { ...FONTS.h2, color: COLORS.text },
-  statLbl:    { ...FONTS.xs, color: COLORS.textSecondary, marginTop: 2, textAlign: 'center' },
+  statBoxAlt: { backgroundColor: '#1C1C1E' },
+  statVal:    { ...FONTS.h2, color: '#FFFFFF' },
+  statLbl:    { ...FONTS.xs, color: 'rgba(255,255,255,0.5)', marginTop: 2, textAlign: 'center' },
 
   btnWrap: { width: '100%' },
   btn: {

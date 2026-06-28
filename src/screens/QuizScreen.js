@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { ProgressBar, CategoryBadge } from '../components/ui';
 import { CATEGORIES, getRandomQuestions } from '../data/questions';
@@ -362,20 +363,21 @@ export default function QuizScreen({ navigation, route }) {
 
         {/* ── Bouton Suivant (masqué en concours blanc — auto-avance) ── */}
         {answered && !isConcoursBlanc && (
-          <TouchableOpacity
-            onPress={handleNext}
-            style={[
-              styles.nextBtn,
-              selected === question.correctIndex
-                ? styles.nextBtnCorrect
-                : styles.nextBtnWrong,
-            ]}
-            activeOpacity={0.85}
-          >
-            <Text style={styles.nextText}>
-              {index >= questions.length - 1 ? 'Voir les résultats 🎯' : 'Continuer →'}
-            </Text>
-          </TouchableOpacity>
+          selected === question.correctIndex ? (
+            <TouchableOpacity onPress={handleNext} style={[styles.nextBtn, styles.nextBtnCorrect]} activeOpacity={0.85}>
+              <Text style={styles.nextText}>
+                {index >= questions.length - 1 ? 'Voir les résultats 🎯' : 'Continuer →'}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={handleNext} activeOpacity={0.85}>
+              <LinearGradient colors={['#1A4AFF', '#002395']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.nextBtn}>
+                <Text style={styles.nextText}>
+                  {index >= questions.length - 1 ? 'Voir les résultats 🎯' : 'Continuer →'}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          )
         )}
 
         <View style={{ height: SPACING.xxl }} />

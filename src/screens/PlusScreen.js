@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getUserName, getXP, getLevelInfo, clearAll, getProgressionMatiere, getStats } from '../utils/storage';
 import { CATEGORIES } from '../data/questions';
 import { TricolorMark } from '../components/ui';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, RADIUS, SPACING } from '../theme/colors';
 
 const MATIERES_ORDER = ['DROIT', 'CULTURE', 'LOGIQUE', 'SECURITE', 'FRANÇAIS', 'MONDE'];
@@ -68,10 +69,15 @@ export default function PlusScreen({ navigation }) {
         {/* ── Fiche Matricule ── */}
         <Text style={styles.sectionLabel}>FICHE MATRICULE</Text>
         <View style={styles.ficheCard}>
-          <View style={styles.ficheHeader}>
+          <LinearGradient
+            colors={['#1A4AFF', '#002395']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.ficheHeader}
+          >
             <Text style={styles.ficheHeaderLabel}>POLICE NATIONALE — CONCOURS GP</Text>
             <Text style={styles.ficheRef}>Réf: CGP-2026</Text>
-          </View>
+          </LinearGradient>
 
           <View style={styles.ficheBody}>
             <TricolorMark size="lg" />
@@ -183,7 +189,7 @@ export default function PlusScreen({ navigation }) {
             <Switch
               value={darkMode}
               onValueChange={setDarkMode}
-              trackColor={{ false: '#2A3A52', true: '#1A3F7A' }}
+              trackColor={{ false: '#2A3A52', true: '#1A4AFF' }}
               thumbColor="#FFFFFF"
             />
           </View>
@@ -196,7 +202,7 @@ export default function PlusScreen({ navigation }) {
             <Switch
               value={notifs}
               onValueChange={setNotifs}
-              trackColor={{ false: '#2A3A52', true: '#1A3F7A' }}
+              trackColor={{ false: '#2A3A52', true: '#1A4AFF' }}
               thumbColor="#FFFFFF"
             />
           </View>
@@ -293,7 +299,7 @@ const styles = StyleSheet.create({
   header: { fontSize: 28, fontWeight: '800', color: '#FFFFFF', marginTop: 24, marginBottom: 20 },
 
   sectionLabel: {
-    fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.35)',
+    fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.5)',
     letterSpacing: 1.2, marginBottom: 8, marginTop: 4,
   },
 
@@ -310,7 +316,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#002395',
     paddingHorizontal: 14,
     paddingVertical: 8,
   },
@@ -325,7 +330,7 @@ const styles = StyleSheet.create({
   },
   ficheInfo:      { flex: 1 },
   ficheName:      { fontSize: 20, fontWeight: '900', color: '#FFFFFF', marginBottom: 3 },
-  ficheMatricule: { fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: '600', letterSpacing: 0.8, marginBottom: 10 },
+  ficheMatricule: { fontSize: 11, color: 'rgba(255,255,255,0.55)', fontWeight: '600', letterSpacing: 0.8, marginBottom: 10 },
   gradeBadge: {
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(26,74,255,0.25)',
@@ -368,7 +373,7 @@ const styles = StyleSheet.create({
   rowIcon:     { fontSize: 20 },
   rowContent:  { flex: 1 },
   rowLabel:    { fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginBottom: 2 },
-  rowSubtitle: { fontSize: 12, color: 'rgba(255,255,255,0.45)' },
+  rowSubtitle: { fontSize: 12, color: 'rgba(255,255,255,0.6)' },
   rowArrow:    { fontSize: 16, color: 'rgba(255,255,255,0.3)' },
 
   bientotPill: { backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: RADIUS.pill, paddingHorizontal: 8, paddingVertical: 3 },

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { TricolorMark } from '../components/ui';
 import { CATEGORIES } from '../data/questions';
@@ -43,31 +44,31 @@ export default function FeedbackScreen({ navigation, route }) {
     <SafeAreaView style={styles.safe}>
 
       {/* ── Score banner (toujours visible) ── */}
-      <Animated.View
-        style={[styles.scoreBanner, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}
-      >
-        <Text style={styles.sessionTag}>SESSION TERMINÉE !</Text>
-        <TricolorMark size="lg" style={{ marginBottom: 12, marginTop: 4 }} />
-        <Text style={styles.scorePct}>{pourcentage}%</Text>
-        <Text style={styles.scoreRatio}>{score} / {total} bonnes réponses</Text>
-        <Text style={[styles.scoreMessage, { color }]}>{message}</Text>
-        <View style={styles.badgeRow}>
-          <View style={[styles.badge, styles.badgeXP]}>
-            <Text style={styles.badgeIcon}>⚡</Text>
-            <Text style={styles.badgeValue}>{xpGained}</Text>
-            <Text style={styles.badgeLabel}>XP</Text>
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ scale: scaleAnim }] }}>
+        <LinearGradient colors={['#1A4AFF', '#002395']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.scoreBanner}>
+          <Text style={styles.sessionTag}>SESSION TERMINÉE !</Text>
+          <TricolorMark size="lg" style={{ marginBottom: 12, marginTop: 4 }} />
+          <Text style={styles.scorePct}>{pourcentage}%</Text>
+          <Text style={styles.scoreRatio}>{score} / {total} bonnes réponses</Text>
+          <Text style={[styles.scoreMessage, { color }]}>{message}</Text>
+          <View style={styles.badgeRow}>
+            <View style={[styles.badge, styles.badgeXP]}>
+              <Text style={styles.badgeIcon}>⚡</Text>
+              <Text style={styles.badgeValue}>{xpGained}</Text>
+              <Text style={styles.badgeLabel}>XP</Text>
+            </View>
+            <View style={[styles.badge, styles.badgeCombo]}>
+              <Text style={styles.badgeIcon}>🔥</Text>
+              <Text style={styles.badgeValue}>x{maxCombo}</Text>
+              <Text style={styles.badgeLabel}>COMBO</Text>
+            </View>
+            <View style={[styles.badge, styles.badgeTime]}>
+              <Text style={styles.badgeIcon}>⏱</Text>
+              <Text style={styles.badgeValue}>{totalTime}</Text>
+              <Text style={styles.badgeLabel}>TEMPS</Text>
+            </View>
           </View>
-          <View style={[styles.badge, styles.badgeCombo]}>
-            <Text style={styles.badgeIcon}>🔥</Text>
-            <Text style={styles.badgeValue}>x{maxCombo}</Text>
-            <Text style={styles.badgeLabel}>COMBO</Text>
-          </View>
-          <View style={[styles.badge, styles.badgeTime]}>
-            <Text style={styles.badgeIcon}>⏱</Text>
-            <Text style={styles.badgeValue}>{totalTime}</Text>
-            <Text style={styles.badgeLabel}>TEMPS</Text>
-          </View>
-        </View>
+        </LinearGradient>
       </Animated.View>
 
       {/* ── Revue des questions (scrollable) ── */}
@@ -86,12 +87,10 @@ export default function FeedbackScreen({ navigation, route }) {
 
       {/* ── Boutons fixes en bas (toujours visibles) ── */}
       <Animated.View style={[styles.footer, { opacity: fadeAnim }]}>
-        <TouchableOpacity
-          onPress={() => navigation.replace('Quiz', { mode })}
-          style={styles.retryBtn}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.retryText}>🔄  Rejouer</Text>
+        <TouchableOpacity onPress={() => navigation.replace('Quiz', { mode })} activeOpacity={0.85} style={{ flex: 1 }}>
+          <LinearGradient colors={['#1A4AFF', '#002395']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.retryBtn}>
+            <Text style={styles.retryText}>🔄  Rejouer</Text>
+          </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main', params: { screen: 'ChoixMode' } }] })}
@@ -207,10 +206,8 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md },
 
   scoreBanner: {
-    backgroundColor: COLORS.primary,
     padding: SPACING.lg,
     alignItems: 'center',
-    ...SHADOWS.card,
   },
   sessionTag: {
     ...FONTS.xs,
@@ -300,12 +297,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   retryBtn: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
     borderRadius: RADIUS.pill,
     paddingVertical: SPACING.md,
     alignItems: 'center',
-    ...SHADOWS.button,
   },
   newModeBtn: {
     flex: 1,

@@ -8,32 +8,35 @@ import { FONTS, SPACING } from '../theme/colors';
 
 export default function WelcomeScreen({ navigation }) {
   const opacity = useRef(new Animated.Value(0)).current;
-  const slide   = useRef(new Animated.Value(24)).current;
+  const slide   = useRef(new Animated.Value(32)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 500, useNativeDriver: true }),
-      Animated.spring(slide,   { toValue: 0, friction: 7, useNativeDriver: true }),
+      Animated.timing(opacity, { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.spring(slide,   { toValue: 0, friction: 8, tension: 60, useNativeDriver: true }),
     ]).start();
   }, []);
 
   return (
     <View style={s.root}>
       <LinearGradient
-        colors={['transparent', 'rgba(26,74,255,0.18)', 'rgba(26,74,255,0.32)']}
+        colors={['transparent', 'rgba(26,74,255,0.12)', 'rgba(26,74,255,0.28)']}
         style={s.ambientGlow}
         pointerEvents="none"
       />
       <SafeAreaView style={{ flex: 1 }}>
 
         <Animated.View style={[s.center, { opacity, transform: [{ translateY: slide }] }]}>
-          <View style={s.trimark}>
-            <View style={[s.tribar, { backgroundColor: '#002395' }]} />
-            <View style={[s.tribar, { backgroundColor: '#F0F4FF' }]} />
-            <View style={[s.tribar, { backgroundColor: '#EF4135' }]} />
+          <View style={s.flagWrap}>
+            <View style={s.trimark}>
+              <View style={[s.tribar, { backgroundColor: '#002395' }]} />
+              <View style={[s.tribar, { backgroundColor: '#F0F4FF' }]} />
+              <View style={[s.tribar, { backgroundColor: '#EF4135' }]} />
+            </View>
           </View>
 
           <Text style={s.appName}>ConcoursPolice</Text>
+          <Text style={s.subtitle}>Gardien de la Paix · Police Nationale</Text>
           <Text style={s.tagline}>
             La préparation fait la différence.{'\n'}Commence dès aujourd'hui.
           </Text>
@@ -41,11 +44,17 @@ export default function WelcomeScreen({ navigation }) {
 
         <Animated.View style={[s.buttons, { opacity }]}>
           <TouchableOpacity
-            style={s.primaryBtn}
             activeOpacity={0.85}
             onPress={() => navigation.navigate('Onboarding')}
           >
-            <Text style={s.primaryText}>COMMENCER LA PRÉPARATION</Text>
+            <LinearGradient
+              colors={['#1A4AFF', '#002395']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={s.primaryBtn}
+            >
+              <Text style={s.primaryText}>COMMENCER LA PRÉPARATION</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
 
@@ -62,18 +71,30 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: SPACING.xl,
   },
-  trimark: { flexDirection: 'row', gap: 5, marginBottom: 28 },
-  tribar:  { width: 9, height: 36 },
+  flagWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+  },
+  trimark: { flexDirection: 'row', gap: 6 },
+  tribar:  { width: 12, height: 52, borderRadius: 3 },
   appName: {
-    fontSize: 36,
+    fontSize: 38,
     fontWeight: '900',
     color: '#F0F4FF',
     letterSpacing: -1,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: 'rgba(160,180,220,0.7)',
+    letterSpacing: 0.5,
     marginBottom: SPACING.md,
   },
   tagline: {
     ...FONTS.body,
-    color: 'rgba(208,216,232,0.55)',
+    color: 'rgba(208,216,232,0.75)',
     textAlign: 'center',
     lineHeight: 26,
   },
@@ -89,7 +110,6 @@ const s = StyleSheet.create({
     paddingBottom: SPACING.xl,
   },
   primaryBtn: {
-    backgroundColor: '#002395',
     borderRadius: 100,
     paddingVertical: 18,
     alignItems: 'center',

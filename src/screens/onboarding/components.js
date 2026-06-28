@@ -120,13 +120,23 @@ export function Cta({ label, onPress, disabled }) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress?.();
   }
+  if (disabled) {
+    return (
+      <TouchableOpacity style={[styles.cta, styles.ctaDisabled]} activeOpacity={1}>
+        <Text style={[styles.ctaText, styles.ctaTextDisabled]}>{label}</Text>
+      </TouchableOpacity>
+    );
+  }
   return (
-    <TouchableOpacity
-      style={[styles.cta, disabled && styles.ctaDisabled]}
-      onPress={disabled ? undefined : handlePress}
-      activeOpacity={disabled ? 1 : 0.85}
-    >
-      <Text style={[styles.ctaText, disabled && styles.ctaTextDisabled]}>{label}</Text>
+    <TouchableOpacity onPress={handlePress} activeOpacity={0.85}>
+      <LinearGradient
+        colors={['#1A4AFF', '#002395']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.cta}
+      >
+        <Text style={styles.ctaText}>{label}</Text>
+      </LinearGradient>
     </TouchableOpacity>
   );
 }

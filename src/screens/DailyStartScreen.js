@@ -77,7 +77,7 @@ export default function DailyStartScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#0E1829' },
+  safe: { flex: 1, backgroundColor: '#0F0F0F' },
   container: {
     flex: 1,
     paddingHorizontal: SPACING.lg,
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   outlineCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#162034',
+    backgroundColor: '#1C1C1E',
     borderRadius: RADIUS.lg,
     padding: 18,
     gap: 14,
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   cardIcon:     { fontSize: 28 },
   cardText:     { flex: 1 },
-  primaryLabel: { fontSize: 16, fontWeight: '800', color: '#0E1829' },
+  primaryLabel: { fontSize: 16, fontWeight: '800', color: '#0F0F0F' },
   primarySub:   { fontSize: 12, color: 'rgba(14,24,41,0.5)', marginTop: 3 },
   outlineLabel: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
   outlineSub:   { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 3 },

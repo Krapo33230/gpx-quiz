@@ -9,7 +9,10 @@ export const KEYS = {
   XP:            'gdp_xp',
   DAILY_SCORES:  'gdp_daily_scores',
   ONBOARDING:    'gdp_onboarding',
-  USER_NAME:     'gdp_user_name',
-  USER_AGE:      'gdp_user_age',
-  OBJECTIF:      'gdp_objectif',
+  USER_NAME:      'gdp_user_name',
+  USER_AGE:       'gdp_user_age',
+  USER_EMAIL:     'gdp_user_email',
+  USER_MATRICULE: 'gdp_user_matricule',
+  USER_GENDER:    'gdp_user_gender',
+  OBJECTIF:       'gdp_objectif',
 };

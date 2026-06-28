@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, Animated,
+  View, Text, StyleSheet, ScrollView, Animated, Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const { height: SCREEN_H } = Dimensions.get('window');
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { getXP, getLevelInfo, LEVELS } from '../utils/storage';
@@ -24,15 +26,38 @@ export default function NiveauxScreen({ navigation }) {
 
   const currentIdx = LEVELS.indexOf(xpInfo.level);
 
-  return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <Text style={styles.titre}>Grades</Text>
-        <Text style={styles.sousTitre}>{xpInfo.xp} XP au total</Text>
-      </View>
+  const glowColor = xpInfo.level.color;
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {LEVELS.map((level, i) => {
+  return (
+    <View style={styles.safe}>
+      {/* Glow ambiant couleur du grade actuel */}
+      <LinearGradient
+        colors={[glowColor + 'CC', glowColor + '55', 'transparent']}
+        style={styles.glowTop}
+        pointerEvents="none"
+      />
+      <LinearGradient
+        colors={['transparent', glowColor + '44']}
+        style={styles.glowBottom}
+        pointerEvents="none"
+      />
+      {/* Halo central */}
+      <LinearGradient
+        colors={['transparent', glowColor + '33', 'transparent']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={styles.glowCenter}
+        pointerEvents="none"
+      />
+
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.header}>
+          <Text style={styles.titre}>Grades</Text>
+          <Text style={styles.sousTitre}>{xpInfo.xp} XP au total</Text>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {LEVELS.map((level, i) => {
           const isCurrent  = i === currentIdx;
           const isUnlocked = i < currentIdx;
           const isLocked   = i > currentIdx;
@@ -66,9 +91,10 @@ export default function NiveauxScreen({ navigation }) {
             </React.Fragment>
           );
         })}
-        <View style={{ height: SPACING.xxl }} />
-      </ScrollView>
-    </SafeAreaView>
+          <View style={{ height: SPACING.xxl }} />
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -96,7 +122,7 @@ function LevelCard({ level, next, pct, xp, isCurrent, isUnlocked, isLocked }) {
         styles.card,
         SHADOWS.card,
         {
-          backgroundColor: isLocked ? '#162034' : 'transparent',
+          backgroundColor: isLocked ? '#1C1C1E' : 'transparent',
           borderColor: border,
           transform: [{ scale: scaleAnim }],
           overflow: 'hidden',
@@ -159,7 +185,10 @@ function XPBar({ pct }) {
 }
 
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: '#0E1829' },
+  safe:       { flex: 1, backgroundColor: '#0F0F0F' },
+  glowTop:    { position: 'absolute', top: 0, left: 0, right: 0, height: SCREEN_H * 0.5 },
+  glowBottom: { position: 'absolute', bottom: 0, left: 0, right: 0, height: SCREEN_H * 0.4 },
+  glowCenter: { position: 'absolute', top: SCREEN_H * 0.2, left: -60, right: -60, height: SCREEN_H * 0.5 },
   header: { paddingHorizontal: SPACING.lg, paddingTop: SPACING.md, paddingBottom: SPACING.md },
   titre:     { ...FONTS.h1, color: '#FFFFFF' },
   sousTitre: { ...FONTS.sm, color: 'rgba(255,255,255,0.55)', marginTop: 2 },

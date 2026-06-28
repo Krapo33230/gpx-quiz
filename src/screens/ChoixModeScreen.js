@@ -11,6 +11,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { CATEGORIES } from '../data/questions';
 
+const CONCOURS_BLANC = {
+  id: 'concoursBlanc',
+  emoji: '🏛️',
+  titre: 'Concours Blanc',
+  description: 'Simulateur d\'examen complet — 40 questions · 45 min · Toutes matières',
+  couleur: '#002395',
+};
+
 const MODES = [
   {
     id: 'flash',
@@ -98,6 +106,61 @@ const MODES = [
     bg: '#EBF8F0',
     categorie: 'MONDE',
   },
+  {
+    id: 'psycho_num',
+    emoji: '🔢',
+    titre: 'Calcul & Numérique',
+    description: '10 questions · Calcul mental, suites, pourcentages',
+    duree: '~8 min',
+    count: 10,
+    couleur: '#4A1A7A',
+    bg: '#F0EBF8',
+    categorie: 'PSYCHO_NUM',
+  },
+  {
+    id: 'psycho_verbal',
+    emoji: '💬',
+    titre: 'Raisonnement Verbal',
+    description: '10 questions · Analogies, synonymes, logique verbale',
+    duree: '~8 min',
+    count: 10,
+    couleur: '#1A5A4A',
+    bg: '#EBF6F4',
+    categorie: 'PSYCHO_VERBAL',
+  },
+  {
+    id: 'psycho_abstrait',
+    emoji: '🔷',
+    titre: 'Raisonnement Abstrait',
+    description: '10 questions · Matrices, formes, séquences',
+    duree: '~8 min',
+    count: 10,
+    couleur: '#7A3A1A',
+    bg: '#FBF0E9',
+    categorie: 'PSYCHO_ABSTRAIT',
+  },
+  {
+    id: 'anglais',
+    emoji: '🇬🇧',
+    titre: 'Anglais',
+    description: '10 questions · Compréhension, vocabulaire, grammaire',
+    duree: '~8 min',
+    count: 10,
+    couleur: '#1A2A7A',
+    bg: '#EEF0FA',
+    categorie: 'ANGLAIS',
+  },
+  {
+    id: 'exercices',
+    emoji: '✅',
+    titre: 'Exercices Pratiques',
+    description: '10 questions · Vrai/faux, mises en situation',
+    duree: '~8 min',
+    count: 10,
+    couleur: '#3A5A1A',
+    bg: '#EFF5EB',
+    categorie: 'EXERCICES',
+  },
 ];
 
 export default function ChoixModeScreen({ navigation }) {
@@ -130,6 +193,22 @@ export default function ChoixModeScreen({ navigation }) {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        {/* Concours blanc — carte vedette pleine largeur */}
+        <TouchableOpacity
+          style={styles.featuredCard}
+          onPress={() => handleSelectMode(CONCOURS_BLANC)}
+          activeOpacity={0.85}
+        >
+          <View style={styles.featuredLeft}>
+            <Text style={styles.featuredEmoji}>{CONCOURS_BLANC.emoji}</Text>
+            <View>
+              <Text style={styles.featuredTitre}>{CONCOURS_BLANC.titre}</Text>
+              <Text style={styles.featuredDesc}>{CONCOURS_BLANC.description}</Text>
+            </View>
+          </View>
+          <Text style={styles.featuredArrow}>→</Text>
+        </TouchableOpacity>
+
         <View style={styles.grid}>
           {MODES.map((mode, index) => (
             <ModeCard
@@ -178,7 +257,7 @@ function ModeCard({ mode, index, onPress }) {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#0E1829' },
+  safe: { flex: 1, backgroundColor: '#0F0F0F' },
 
   header: {
     paddingHorizontal: SPACING.lg,
@@ -199,12 +278,12 @@ const styles = StyleSheet.create({
   },
   cardWrapper: { width: '48.5%' },
   card: {
-    backgroundColor: '#162034',
+    backgroundColor: '#1C1C1E',
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     alignItems: 'flex-start',
     borderWidth: 1,
-    borderColor: '#1E2F48',
+    borderColor: 'rgba(255,255,255,0.07)',
     height: 120,
   },
   cardIconBox: {
@@ -217,4 +296,21 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 26 },
   cardTitre: { ...FONTS.sm, fontWeight: '800', color: '#FFFFFF', marginBottom: 4, lineHeight: 18 },
   cardDuree: { ...FONTS.xs, color: 'rgba(255,255,255,0.4)', fontWeight: '600' },
+
+  featuredCard: {
+    backgroundColor: '#002395',
+    borderRadius: RADIUS.lg,
+    padding: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: SPACING.md,
+    borderWidth: 1,
+    borderColor: '#1A4AFF',
+  },
+  featuredLeft:  { flexDirection: 'row', alignItems: 'center', gap: SPACING.md, flex: 1 },
+  featuredEmoji: { fontSize: 32 },
+  featuredTitre: { ...FONTS.body, fontWeight: '900', color: '#FFFFFF', marginBottom: 3 },
+  featuredDesc:  { ...FONTS.xs, color: 'rgba(255,255,255,0.6)', lineHeight: 16 },
+  featuredArrow: { fontSize: 20, color: 'rgba(255,255,255,0.6)', fontWeight: '700' },
 });

@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, Animated, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { FONTS, SPACING } from '../theme/colors';
 
 export default function WelcomeScreen({ navigation }) {
@@ -18,6 +19,11 @@ export default function WelcomeScreen({ navigation }) {
 
   return (
     <View style={s.root}>
+      <LinearGradient
+        colors={['transparent', 'rgba(26,74,255,0.18)', 'rgba(26,74,255,0.32)']}
+        style={s.ambientGlow}
+        pointerEvents="none"
+      />
       <SafeAreaView style={{ flex: 1 }}>
 
         <Animated.View style={[s.center, { opacity, transform: [{ translateY: slide }] }]}>
@@ -70,6 +76,13 @@ const s = StyleSheet.create({
     color: 'rgba(208,216,232,0.55)',
     textAlign: 'center',
     lineHeight: 26,
+  },
+  ambientGlow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '45%',
   },
   buttons: {
     paddingHorizontal: SPACING.lg,

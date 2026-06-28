@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, Animated, TouchableOpacity } from 'react-native';
+import { View, Text, Animated, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { SPACING } from '../../theme/colors';
@@ -271,70 +273,196 @@ export function IntroChat({ msgIndex, onDone }) {
   );
 }
 
-// ─── Écran de chargement animé (step 7) ──────────────────────────────────────
-export function LoadingStep({ loadingAnim }) {
-  const [dots, setDots] = useState('');
+// ─── Step 9 : Notifications — Cercle de rappel ───────────────────────────────
+const HOURS   = [7, 8, 12, 17, 18, 19, 20, 21, 22];
+const CIRCLE  = 280;
+const CX      = CIRCLE / 2;
+const R_CHIP  = 118;
+const CHIP_W  = 48;
+const CHIP_H  = 30;
 
-  const flagAnim   = useRef(new Animated.Value(0)).current;
-  const labelAnim  = useRef(new Animated.Value(0)).current;
-  const barAnim    = useRef(new Animated.Value(0)).current;
-  const bottomAnim = useRef(new Animated.Value(0)).current;
-  const pulse      = useRef(new Animated.Value(1)).current;
+export function NotifStep9({ hour, onHourChange }) {
+  const fadeAnim  = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.stagger(150, [
-      Animated.spring(flagAnim,   { toValue: 1, friction: 7, tension: 50, useNativeDriver: true }),
-      Animated.spring(labelAnim,  { toValue: 1, friction: 7, tension: 50, useNativeDriver: true }),
-      Animated.spring(barAnim,    { toValue: 1, friction: 7, tension: 50, useNativeDriver: true }),
-      Animated.spring(bottomAnim, { toValue: 1, friction: 7, tension: 50, useNativeDriver: true }),
-    ]).start(() => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulse, { toValue: 1.12, duration: 900, useNativeDriver: true }),
-          Animated.timing(pulse, { toValue: 1,    duration: 900, useNativeDriver: true }),
-        ])
-      ).start();
-    });
+    Animated.timing(fadeAnim, { toValue: 1, duration: 500, delay: 80, useNativeDriver: true }).start();
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.1,  duration: 1400, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1,    duration: 1400, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View style={[{ flex: 1 }, { opacity: fadeAnim }]}>
+      <View style={ns.scroll}>
+
+        <Text style={ns.title}>🔔 ORDRE DE RAPPEL</Text>
+        <Text style={ns.subtitle}>
+          CONVOCATION QUOTIDIENNE :{' '}
+          <Text style={ns.subtitleBold}>10 minutes</Text> d'engagement pour votre progression.
+        </Text>
+
+        {/* Cercle heures + cloche */}
+        <View style={ns.circleWrap}>
+          {/* Anneaux lumineux */}
+          <View style={[ns.ring, { width: CIRCLE,      height: CIRCLE,      borderRadius: CIRCLE / 2,      borderColor: 'rgba(245,158,11,0.10)', top: 0,  left: 0  }]} />
+          <View style={[ns.ring, { width: CIRCLE - 44, height: CIRCLE - 44, borderRadius: (CIRCLE-44) / 2, borderColor: 'rgba(245,158,11,0.20)', top: 22, left: 22 }]} />
+          <View style={[ns.ring, { width: CIRCLE - 88, height: CIRCLE - 88, borderRadius: (CIRCLE-88) / 2, borderColor: 'rgba(245,158,11,0.35)', top: 44, left: 44 }]} />
+
+          {/* Cloche centrale */}
+          <Animated.View style={[ns.bellWrap, { transform: [{ scale: pulseAnim }] }]}>
+            <Text style={ns.bell}>🔔</Text>
+          </Animated.View>
+
+          {/* Chips d'heures en cercle */}
+          {HOURS.map((h, i) => {
+            const angle    = (i / HOURS.length) * 2 * Math.PI - Math.PI / 2;
+            const left     = CX + Math.cos(angle) * R_CHIP - CHIP_W / 2;
+            const top      = CX + Math.sin(angle) * R_CHIP - CHIP_H / 2;
+            const selected = hour === h;
+            return (
+              <TouchableOpacity
+                key={h}
+                style={[ns.chip, { left, top }, selected && ns.chipSelected]}
+                onPress={() => onHourChange?.(h)}
+                activeOpacity={0.7}
+              >
+                <Text style={[ns.chipText, selected && ns.chipTextSelected]}>{h}h</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* Streak hint */}
+        <View style={ns.streakRow}>
+          <Text style={ns.streakText}>🔥 Série de rappel : activez pour l'allumer.</Text>
+        </View>
+
+      </View>
+    </Animated.View>
+  );
+}
+
+const ns = StyleSheet.create({
+  scroll: { flex: 1, paddingHorizontal: 24, paddingTop: 20, alignItems: 'center' },
+
+  title:        { fontSize: 18, fontWeight: '900', color: '#FFFFFF', letterSpacing: 1.5, marginBottom: 8, textAlign: 'center' },
+  subtitle:     { fontSize: 13, color: 'rgba(255,255,255,0.5)', textAlign: 'center', lineHeight: 20, marginBottom: 20 },
+  subtitleBold: { fontWeight: '800', color: '#F0F4FF' },
+
+  circleWrap: { width: CIRCLE, height: CIRCLE, position: 'relative', marginBottom: 24 },
+
+  ring: { position: 'absolute', borderWidth: 1.5 },
+
+  bellWrap: {
+    position: 'absolute',
+    width: 86, height: 86,
+    top: CX - 43, left: CX - 43,
+    borderRadius: 43,
+    backgroundColor: 'rgba(245,158,11,0.12)',
+    borderWidth: 2,
+    borderColor: 'rgba(245,158,11,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bell: { fontSize: 36 },
+
+  chip: {
+    position: 'absolute',
+    width: CHIP_W, height: CHIP_H,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipSelected:     { backgroundColor: 'rgba(245,158,11,0.2)', borderColor: '#F59E0B' },
+  chipText:         { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.4)' },
+  chipTextSelected: { color: '#FCD34D', fontWeight: '900' },
+
+  streakRow: {
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  streakText: { fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: '600', textAlign: 'center' },
+});
+
+// ─── Écran de chargement animé (step 7) ──────────────────────────────────────
+export function LoadingStep() {
+  const [dots, setDots] = useState('');
+
+  const textOp = useRef(new Animated.Value(0)).current;
+  const textY  = useRef(new Animated.Value(24)).current;
+  const barOp  = useRef(new Animated.Value(0)).current;
+  const barW   = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(textOp, { toValue: 1, duration: 500, delay: 300, useNativeDriver: true }),
+      Animated.timing(textY,  { toValue: 0, duration: 500, delay: 300, useNativeDriver: true }),
+      Animated.timing(barOp,  { toValue: 1, duration: 400, delay: 600, useNativeDriver: true }),
+      Animated.timing(barW,   { toValue: 1, duration: 1500, delay: 600, useNativeDriver: false }),
+    ]).start();
 
     let i = 0;
     const t = setInterval(() => { i = (i + 1) % 4; setDots('.'.repeat(i)); }, 450);
     return () => clearInterval(t);
   }, []);
 
-  const slideIn = (anim) => ({
-    opacity: anim,
-    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }],
-  });
-
   return (
-    <View style={styles.centerFull}>
-      <Animated.View style={[{ marginBottom: 8 }, slideIn(flagAnim), { transform: [
-        { scale: pulse },
-        { translateY: flagAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) },
-      ]}]}>
-        <TricolorMark size="lg" />
-      </Animated.View>
-
-      <Animated.View style={slideIn(labelAnim)}>
-        <Text style={styles.loadingLabel}>PRÉPARATION DE TON PROGRAMME{dots}</Text>
-      </Animated.View>
-
-      <Animated.View style={[{ width: '100%' }, { opacity: barAnim }]}>
-        <View style={styles.loadingBarTrack}>
-          <Animated.View
-            style={[styles.loadingBarFill, {
-              width: loadingAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-            }]}
-          />
-        </View>
-      </Animated.View>
-
-      <Animated.View style={slideIn(bottomAnim)}>
-        <Text style={styles.loadingText}>
-          Rejoins les candidats qui{'\n'}se préparent avec{' '}
-          <Text style={{ color: ACCENT, fontWeight: '900' }}>ConcoursPolice</Text> !
-        </Text>
+    <View style={ls.root}>
+      <Animated.View style={[ls.content, { opacity: textOp, transform: [{ translateY: textY }] }]}>
+        <Text style={ls.label}>ON PRÉPARE{'\n'}TON PROGRAMME{dots}</Text>
+        <Animated.View style={{ width: '100%', opacity: barOp, marginTop: 28 }}>
+          <View style={ls.barTrack}>
+            <Animated.View style={[ls.barFill, {
+              width: barW.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+            }]} />
+          </View>
+        </Animated.View>
       </Animated.View>
     </View>
   );
 }
+
+const ls = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#0F0F0F',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: {
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    width: '100%',
+  },
+  label: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#F0F4FF',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+    lineHeight: 30,
+  },
+  barTrack: {
+    height: 3,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 2,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  barFill: {
+    height: '100%',
+    borderRadius: 2,
+    backgroundColor: '#1A4AFF',
+  },
+});

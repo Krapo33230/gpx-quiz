@@ -181,7 +181,7 @@ export default function InfoScreen() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  safe:   { flex: 1, backgroundColor: '#0E1829' },
+  safe:   { flex: 1, backgroundColor: '#0F0F0F' },
   scroll: { paddingHorizontal: 20, paddingBottom: 32 },
 
   pageTitle:    { fontSize: 28, fontWeight: '800', color: '#FFFFFF', marginTop: 24, marginBottom: 4 },
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
 
   // Dates card
   datesCard: {
-    backgroundColor: '#162034',
+    backgroundColor: '#1C1C1E',
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
     marginBottom: 28,
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
 
   // FAQ
   faqCard: {
-    backgroundColor: '#162034',
+    backgroundColor: '#1C1C1E',
     borderRadius: RADIUS.lg,
     overflow: 'hidden',
     marginBottom: 20,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
 
   // Bouton JO
   joBtn: {
-    backgroundColor: '#162034',
+    backgroundColor: '#1C1C1E',
     borderRadius: RADIUS.lg,
     padding: 16,
     borderWidth: 1,

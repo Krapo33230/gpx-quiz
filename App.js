@@ -57,6 +57,8 @@ import CGUScreen             from './src/screens/CGUScreen';
 import ConfidentialiteScreen from './src/screens/ConfidentialiteScreen';
 import SplashScreen          from './src/screens/SplashScreen';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // ─── Thème ───────────────────────────────────────────────────────────────────
 import { COLORS } from './src/theme/colors';
 
@@ -189,11 +191,11 @@ export default function App() {
 
   useEffect(() => {
     const init = async () => {
-      await Promise.all([
+await Promise.all([
         initPurchases(),
         new Promise(resolve => setTimeout(resolve, 4000)), // durée minimum du splash
       ]);
-      setInitialRoute('Welcome');
+      setInitialRoute('Onboarding'); // DEV
     };
     init();
   }, []);

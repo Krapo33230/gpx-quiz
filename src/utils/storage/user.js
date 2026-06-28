@@ -8,14 +8,25 @@ export async function isOnboardingDone() {
   } catch { return false; }
 }
 
-export async function completeOnboarding(name, age) {
+export async function completeOnboarding(name, age, email, matricule, gender) {
   try {
     await AsyncStorage.multiSet([
-      [KEYS.ONBOARDING, 'done'],
-      [KEYS.USER_NAME,  name ?? ''],
-      [KEYS.USER_AGE,   age ? String(age) : ''],
+      [KEYS.ONBOARDING,      'done'],
+      [KEYS.USER_NAME,       name ?? ''],
+      [KEYS.USER_AGE,        age ? String(age) : ''],
+      [KEYS.USER_EMAIL,      email ?? ''],
+      [KEYS.USER_MATRICULE,  matricule ?? ''],
+      [KEYS.USER_GENDER,     gender ?? ''],
     ]);
   } catch {}
+}
+
+export async function getUserEmail() {
+  try { return (await AsyncStorage.getItem(KEYS.USER_EMAIL)) ?? ''; } catch { return ''; }
+}
+
+export async function getUserMatricule() {
+  try { return (await AsyncStorage.getItem(KEYS.USER_MATRICULE)) ?? ''; } catch { return ''; }
 }
 
 export async function getUserName() {

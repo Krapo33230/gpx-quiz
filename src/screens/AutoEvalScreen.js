@@ -11,15 +11,35 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS, FONTS, RADIUS, SHADOWS, SPACING } from '../theme/colors';
 import { QUESTIONS, CATEGORIES } from '../data/questions';
 
-const CATS = ['DROIT', 'CULTURE', 'LOGIQUE', 'SECURITE', 'FRANÇAIS'];
+const CATS = ['DROIT', 'CULTURE', 'LOGIQUE', 'SECURITE', 'FRANÇAIS', 'MONDE', 'PSYCHO_NUM', 'PSYCHO_VERBAL', 'PSYCHO_ABSTRAIT', 'ANGLAIS', 'EXERCICES'];
 const NB_PAR_CAT = 2;
 
 const CAT_TO_MODE = {
-  DROIT:    { id: 'droit',    emoji: '⚖️',  titre: 'Droit & Institutions',  description: 'Spécialisé Droit, Constitution, Procédure', duree: '~8 min', couleur: '#1A3F7A', bg: '#EEF2FA', categorie: 'DROIT' },
-  CULTURE:  { id: 'culture',  emoji: '🌍',  titre: 'Culture Générale',       description: 'Histoire, géographie, société française',   duree: '~8 min', couleur: '#2B7A5B', bg: '#EBF8F2', categorie: 'CULTURE' },
-  LOGIQUE:  { id: 'logique',  emoji: '🧠',  titre: 'Logique & Raisonnement', description: 'Séries, syllogismes, calculs',               duree: '~8 min', couleur: '#7A2B6A', bg: '#F8EBF7', categorie: 'LOGIQUE' },
-  SECURITE: { id: 'securite', emoji: '🚔',  titre: 'Sécurité & Police',      description: 'Organisation police, procédures',            duree: '~8 min', couleur: '#7A4B1A', bg: '#FBF2E9', categorie: 'SECURITE' },
-  FRANÇAIS: { id: 'francais', emoji: '📝',  titre: 'Français & Expression',  description: 'Orthographe, vocabulaire, grammaire',        duree: '~8 min', couleur: '#1A6A7A', bg: '#EBF6F8', categorie: 'FRANÇAIS' },
+  DROIT:           { id: 'droit',           emoji: '⚖️',  titre: 'Droit & Institutions',    description: 'Droit, Constitution, Procédure',         duree: '~8 min', couleur: '#1A3F7A', bg: '#EEF2FA', categorie: 'DROIT' },
+  CULTURE:         { id: 'culture',         emoji: '🌍',  titre: 'Culture Générale',         description: 'Histoire, géographie, société française', duree: '~8 min', couleur: '#2B7A5B', bg: '#EBF8F2', categorie: 'CULTURE' },
+  LOGIQUE:         { id: 'logique',         emoji: '🧠',  titre: 'Logique & Raisonnement',   description: 'Séries, syllogismes, calculs',             duree: '~8 min', couleur: '#7A2B6A', bg: '#F8EBF7', categorie: 'LOGIQUE' },
+  SECURITE:        { id: 'securite',        emoji: '🚔',  titre: 'Sécurité & Police',        description: 'Organisation police, procédures',          duree: '~8 min', couleur: '#7A4B1A', bg: '#FBF2E9', categorie: 'SECURITE' },
+  FRANÇAIS:        { id: 'francais',        emoji: '📝',  titre: 'Français & Expression',    description: 'Orthographe, vocabulaire, grammaire',      duree: '~8 min', couleur: '#1A6A7A', bg: '#EBF6F8', categorie: 'FRANÇAIS' },
+  MONDE:           { id: 'monde',           emoji: '🌐',  titre: 'Monde & Citoyenneté',      description: 'Actualité, institutions, citoyenneté',     duree: '~8 min', couleur: '#1A6A3A', bg: '#EBF8F0', categorie: 'MONDE' },
+  PSYCHO_NUM:      { id: 'psycho_num',      emoji: '🔢',  titre: 'Calcul & Numérique',       description: 'Calcul mental, suites numériques',         duree: '~8 min', couleur: '#4A1A7A', bg: '#F0EBF8', categorie: 'PSYCHO_NUM' },
+  PSYCHO_VERBAL:   { id: 'psycho_verbal',   emoji: '💬',  titre: 'Raisonnement Verbal',      description: 'Analogies, synonymes, logique verbale',    duree: '~8 min', couleur: '#1A5A4A', bg: '#EBF6F4', categorie: 'PSYCHO_VERBAL' },
+  PSYCHO_ABSTRAIT: { id: 'psycho_abstrait', emoji: '🔷',  titre: 'Raisonnement Abstrait',    description: 'Matrices, formes, séquences visuelles',    duree: '~8 min', couleur: '#7A3A1A', bg: '#FBF0E9', categorie: 'PSYCHO_ABSTRAIT' },
+  ANGLAIS:         { id: 'anglais',         emoji: '🇬🇧', titre: 'Anglais',                  description: 'Compréhension, vocabulaire, grammaire',    duree: '~8 min', couleur: '#1A2A7A', bg: '#EEF0FA', categorie: 'ANGLAIS' },
+  EXERCICES:       { id: 'exercices',       emoji: '✅',  titre: 'Exercices Pratiques',      description: 'Vrai/faux, mises en situation',            duree: '~8 min', couleur: '#3A5A1A', bg: '#EFF5EB', categorie: 'EXERCICES' },
+};
+
+const DIAG_LABELS = {
+  DROIT:           { code: 'DR',  label: 'Connaissances Institutionnelles & Droit' },
+  CULTURE:         { code: 'CG',  label: 'Culture Générale' },
+  LOGIQUE:         { code: 'LG',  label: 'Raisonnement Logique' },
+  SECURITE:        { code: 'SÉC', label: 'Déontologie & Missions de Sécurité' },
+  FRANÇAIS:        { code: 'FR',  label: 'Expression Écrite & Rédaction' },
+  MONDE:           { code: 'MDE', label: 'Monde & Citoyenneté' },
+  PSYCHO_NUM:      { code: 'NUM', label: 'Aptitudes Numériques' },
+  PSYCHO_VERBAL:   { code: 'VRB', label: 'Raisonnement Verbal' },
+  PSYCHO_ABSTRAIT: { code: 'ABS', label: 'Raisonnement Abstrait' },
+  ANGLAIS:         { code: 'ANG', label: 'Langue Anglaise' },
+  EXERCICES:       { code: 'EX',  label: 'Exercices Pratiques' },
 };
 
 function pickRandom(arr, n) {
@@ -202,113 +222,101 @@ function ResultsPhase({ answers, navigation, fromOnboarding }) {
     (answers.filter(a => a.correct).length / answers.length) * 100,
   );
 
-  function getMessage() {
-    if (globalPct >= 80) return { emoji: '🏆', text: 'Excellent niveau ! Continue comme ça.' };
-    if (globalPct >= 60) return { emoji: '📈', text: 'Bon début, quelques matières à consolider.' };
-    return { emoji: '💪', text: 'Du travail en perspective — c\'est maintenant que ça commence !' };
+  function getLevel() {
+    if (globalPct >= 80) return {
+      label: 'APTITUDE : CONFIRMÉE',
+      color: '#22C55E',
+      msg: "Niveau de préparation élevé. Maintenez la cadence et affinez vos lacunes résiduelles.",
+    };
+    if (globalPct >= 60) return {
+      label: 'APTITUDE : EN DÉVELOPPEMENT',
+      color: '#F59E0B',
+      msg: "Base solide identifiée. Des domaines ciblés requièrent un renforcement immédiat.",
+    };
+    return {
+      label: 'APTITUDE : À CONSOLIDER',
+      color: '#EF4444',
+      msg: "Lacunes identifiées. L'entraînement commence maintenant pour élever votre état de préparation.",
+    };
   }
 
-  const msg = getMessage();
+  const level = getLevel();
+
+  function getStatus(correct, total) {
+    const pct = correct / total;
+    if (pct === 1)  return { label: 'MAÎTRISÉ',    color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.3)'  };
+    if (pct >= 0.5) return { label: 'À RENFORCER', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.3)' };
+    return                 { label: 'NON VALIDÉ',  color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.3)'  };
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
-      {!fromOnboarding && (
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Accueil' })} style={styles.backBtn}>
-            <Text style={styles.backText}>← Accueil</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={rs.scroll} showsVerticalScrollIndicator={false}>
         <Animated.View style={{ opacity: fadeAnim }}>
 
-          {/* ── Titre ── */}
-          <View style={styles.resultsHeader}>
-            <Text style={styles.resultsEmoji}>{msg.emoji}</Text>
-            <Text style={styles.resultsTitre}>Ton diagnostic</Text>
-            <Text style={styles.resultsGlobal}>{globalPct}% de bonnes réponses</Text>
-            <Text style={styles.resultsMsg}>{msg.text}</Text>
+          {/* ── Document header ── */}
+          <View style={rs.docCard}>
+            <View style={rs.docHeader}>
+              <Text style={rs.docTitle}>RAPPORT D'ÉVALUATION INITIALE</Text>
+              <Text style={rs.docRef}>Réf : DIAG-REC-2026 // Classification : Interne</Text>
+            </View>
+            <View style={rs.docDivider} />
+            <View style={rs.scoreSection}>
+              <View style={[rs.scoreRing, { borderColor: level.color }]}>
+                <Text style={[rs.scorePct, { color: level.color }]}>{globalPct}%</Text>
+              </View>
+              <View style={rs.scoreRight}>
+                <Text style={[rs.scoreLevel, { color: level.color }]}>{level.label}</Text>
+                <Text style={rs.scoreMsg}>{level.msg}</Text>
+              </View>
+            </View>
           </View>
 
-          {/* ── Scores par matière ── */}
-          <Text style={styles.sectionTitle}>Résultats par matière</Text>
-          {CATS.map(cat => {
-            const { correct, total } = scores[cat];
-            const pct = Math.round((correct / total) * 100);
-            const isWeak = cat === weakest && correct < total;
-            const cat_info = CATEGORIES[cat];
-            const barColor = pct === 100 ? COLORS.success : pct >= 50 ? COLORS.warning : COLORS.danger;
-
-            return (
-              <View
-                key={cat}
-                style={[styles.catRow, SHADOWS.card, isWeak && styles.catRowWeak]}
-              >
-                <Text style={styles.catRowEmoji}>{cat_info.emoji}</Text>
-                <View style={styles.catRowContent}>
-                  <View style={styles.catRowHeader}>
-                    <Text style={styles.catRowLabel}>{cat_info.label}</Text>
-                    <Text style={[styles.catRowScore, { color: barColor }]}>
-                      {correct}/{total}
-                    </Text>
+          {/* ── Domaines ── */}
+          <Text style={rs.sectionLabel}>DOMAINES DE COMPÉTENCE ÉVALUÉS</Text>
+          <View style={rs.domainesCard}>
+            {CATS.map((cat, i) => {
+              const { correct, total } = scores[cat];
+              const status = getStatus(correct, total);
+              const info = DIAG_LABELS[cat];
+              return (
+                <View key={cat} style={[rs.domRow, i < CATS.length - 1 && rs.domRowBorder]}>
+                  <View style={rs.domCode}>
+                    <Text style={rs.domCodeText}>{info.code}</Text>
+                  </View>
+                  <Text style={rs.domLabel} numberOfLines={2}>{info.label}</Text>
+                  <View style={[rs.statusBadge, { backgroundColor: status.bg, borderColor: status.border }]}>
+                    <Text style={[rs.statusText, { color: status.color }]}>{status.label}</Text>
                   </View>
                 </View>
-                {isWeak && <Text style={styles.weakTag}>À travailler</Text>}
-              </View>
-            );
-          })}
+              );
+            })}
+          </View>
 
-          {/* ── Recommandation / CTA ── */}
-          {fromOnboarding ? (
-            <>
-              {scores[weakest].correct < NB_PAR_CAT && (
-                <View style={styles.recoInfo}>
-                  <Text style={styles.recoInfoTitle}>
-                    💡 Priorité : {CATEGORIES[weakest].emoji} {CATEGORIES[weakest].label}
-                  </Text>
-                  <Text style={styles.recoInfoDesc}>
-                    C'est ta matière la plus faible — on en tiendra compte dans ta préparation.
-                  </Text>
-                </View>
-              )}
-              <TouchableOpacity
-                style={styles.continueBtn}
-                onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.continueBtnText}>Commencer ma préparation →</Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              {scores[weakest].correct < NB_PAR_CAT && (
-                <View style={[styles.recoCard, SHADOWS.card]}>
-                  <Text style={styles.recoTitle}>
-                    Priorité : {CATEGORIES[weakest].emoji} {CATEGORIES[weakest].label}
-                  </Text>
-                  <Text style={styles.recoDesc}>
-                    C'est ta matière la plus faible. On commence par là ?
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.recoBtn}
-                    onPress={() => navigation.navigate('Quiz', { mode: CAT_TO_MODE[weakest] })}
-                  >
-                    <Text style={styles.recoBtnText}>
-                      S'entraîner en {CATEGORIES[weakest].label}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              <TouchableOpacity
-                style={styles.freeBtn}
-                onPress={() => navigation.navigate('Main', { screen: 'ChoixMode' })}
-              >
-                <Text style={styles.freeBtnText}>Choisir une autre matière</Text>
-              </TouchableOpacity>
-            </>
+          {/* ── Priorité ── */}
+          {scores[weakest].correct < NB_PAR_CAT && (
+            <View style={rs.priorityCard}>
+              <Text style={rs.priorityLabel}>PRIORITÉ D'ENTRAÎNEMENT</Text>
+              <Text style={rs.priorityTitle}>{DIAG_LABELS[weakest].label}</Text>
+              <Text style={rs.priorityDesc}>
+                Domaine critique identifié. Focus recommandé pour optimiser votre niveau de préparation.
+              </Text>
+            </View>
           )}
 
-          <View style={{ height: SPACING.xxl }} />
+          {/* ── CTA ── */}
+          <TouchableOpacity
+            style={rs.cta}
+            onPress={() => fromOnboarding
+              ? navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
+              : navigation.navigate('Main', { screen: 'Accueil' })
+            }
+            activeOpacity={0.85}
+          >
+            <Text style={rs.ctaText}>REJOINDRE LA FORMATION →</Text>
+          </TouchableOpacity>
+
+          <View style={{ height: 32 }} />
         </Animated.View>
       </ScrollView>
     </SafeAreaView>
@@ -471,4 +479,98 @@ const styles = StyleSheet.create({
     marginTop: SPACING.sm,
   },
   continueBtnText: { ...FONTS.h3, color: COLORS.white, letterSpacing: 0.3 },
+});
+
+const rs = StyleSheet.create({
+  scroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 40 },
+
+  docCard: {
+    backgroundColor: '#111827',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#1A4AFF',
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  docHeader: {
+    backgroundColor: '#002395',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  docTitle: { fontSize: 13, fontWeight: '900', color: '#FFFFFF', letterSpacing: 2 },
+  docRef:   { fontSize: 10, color: 'rgba(255,255,255,0.5)', marginTop: 3, letterSpacing: 0.5 },
+  docDivider: { height: 1, backgroundColor: 'rgba(26,74,255,0.25)' },
+
+  scoreSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    gap: 16,
+  },
+  scoreRing: {
+    width: 88, height: 88, borderRadius: 44,
+    borderWidth: 4,
+    alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  scorePct:   { fontSize: 22, fontWeight: '900' },
+  scoreRight: { flex: 1 },
+  scoreLevel: { fontSize: 11, fontWeight: '900', letterSpacing: 0.8, marginBottom: 6 },
+  scoreMsg:   { fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 18 },
+
+  sectionLabel: {
+    fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.3)',
+    letterSpacing: 1.5, marginBottom: 10,
+  },
+
+  domainesCard: {
+    backgroundColor: '#1C1C1E',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.07)',
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  domRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    gap: 12,
+  },
+  domRowBorder: { borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.05)' },
+  domCode: {
+    width: 38, height: 38, borderRadius: 8,
+    backgroundColor: 'rgba(26,74,255,0.15)',
+    borderWidth: 1, borderColor: 'rgba(26,74,255,0.3)',
+    alignItems: 'center', justifyContent: 'center',
+    flexShrink: 0,
+  },
+  domCodeText:  { fontSize: 9, fontWeight: '900', color: '#A0B8FF', letterSpacing: 0.5 },
+  domLabel:     { flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.75)', fontWeight: '600', lineHeight: 17 },
+  statusBadge:  { paddingHorizontal: 7, paddingVertical: 4, borderRadius: 6, borderWidth: 1 },
+  statusText:   { fontSize: 9, fontWeight: '800', letterSpacing: 0.4 },
+
+  priorityCard: {
+    backgroundColor: 'rgba(239,68,68,0.07)',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.3)',
+    padding: 16,
+    marginBottom: 16,
+  },
+  priorityLabel: { fontSize: 10, fontWeight: '800', color: '#EF4444', letterSpacing: 1, marginBottom: 6 },
+  priorityTitle: { fontSize: 16, fontWeight: '900', color: '#FFFFFF', marginBottom: 4 },
+  priorityDesc:  { fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 19 },
+
+  cta: {
+    backgroundColor: '#002395',
+    borderRadius: 50,
+    paddingVertical: 18,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1A4AFF',
+  },
+  ctaText: { fontSize: 15, fontWeight: '900', color: '#FFFFFF', letterSpacing: 0.8 },
 });

@@ -2,11 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { KEYS } from './_keys';
 
 export const LEVELS = [
-  { name: 'Recrue',     emoji: '🎖️', min: 0,    color: '#8892A8', gradient: ['#C8CDD8', '#9298A8', '#B4B9C6', '#72788A'] },
-  { name: 'Gardien',    emoji: '🥈',  min: 500,  color: '#8090AC', gradient: ['#E0E5F0', '#9BA6BE', '#CDD4E4', '#8090AC'] },
-  { name: 'Brigadier',  emoji: '🥇',  min: 1500, color: '#C09000', gradient: ['#FFE566', '#C09000', '#FFD020', '#A07800'] },
-  { name: 'Officier',   emoji: '💎',  min: 3000, color: '#006DBF', gradient: ['#5CC8FF', '#006DBF', '#38AAEE', '#004A90'] },
-  { name: 'Commandant', emoji: '🏆',  min: 6000, color: '#C03800', gradient: ['#FFB060', '#C03800', '#FF7020', '#901800'] },
+  { name: 'Recrue',     emoji: '🎖️', min: 0,    color: '#6B7280', gradient: ['#9CA3AF', '#6B7280', '#D1D5DB', '#4B5563'] },
+  { name: 'Gardien',    emoji: '🥈',  min: 500,  color: '#3B82F6', gradient: ['#93C5FD', '#3B82F6', '#60A5FA', '#1D4ED8'] },
+  { name: 'Brigadier',  emoji: '🥇',  min: 1500, color: '#D97706', gradient: ['#FDE68A', '#D97706', '#FBBF24', '#B45309'] },
+  { name: 'Officier',   emoji: '💎',  min: 3000, color: '#7C3AED', gradient: ['#C4B5FD', '#7C3AED', '#A78BFA', '#5B21B6'] },
+  { name: 'Commandant', emoji: '🏆',  min: 6000, color: '#DC2626', gradient: ['#FCA5A5', '#DC2626', '#F87171', '#991B1B'] },
 ];
 
 export function getLevelInfo(xp) {

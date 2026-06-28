@@ -14,14 +14,21 @@ import { ProgressBar, CategoryBadge } from '../components/ui';
 import { CATEGORIES, getRandomQuestions } from '../data/questions';
 import { recordAnswer } from '../utils/storage';
 
-const MODE_COUNT = { flash: 5, complet: 20 };
+const MODE_COUNT = { flash: 5, complet: 20, concoursBlanc: 40 };
+const GLOBAL_TIMER_SECONDS = 45 * 60;
+
+function formatGlobalTime(s) {
+  const m = Math.floor(s / 60);
+  return `${m}:${(s % 60).toString().padStart(2, '0')}`;
+}
 
 export default function QuizScreen({ navigation, route }) {
   // ChoixModeScreen passe un objet mode complet {id, categorie?, ...}
-  const rawMode   = route.params?.mode ?? {};
-  const modeId    = typeof rawMode === 'string' ? rawMode : (rawMode.id ?? 'libre');
-  const categorie = route.params?.categorie ?? rawMode.categorie ?? null;
-  const TIMER_SECONDS = rawMode.timerSeconds ?? 30;
+  const rawMode         = route.params?.mode ?? {};
+  const modeId          = typeof rawMode === 'string' ? rawMode : (rawMode.id ?? 'libre');
+  const categorie       = route.params?.categorie ?? rawMode.categorie ?? null;
+  const TIMER_SECONDS   = rawMode.timerSeconds ?? 30;
+  const isConcoursBlanc = modeId === 'concoursBlanc';
 
   // ─── State ────────────────────────────────────────────────────────────────────
   const [questions] = useState(() =>
@@ -35,7 +42,11 @@ export default function QuizScreen({ navigation, route }) {
   const [timeLeft, setTimeLeft] = useState(TIMER_SECONDS);
 
   const timerRef   = useRef(null);
-  const timeLeftRef = useRef(TIMER_SECONDS); // ref pour lecture sync dans callback
+  const timeLeftRef = useRef(TIMER_SECONDS);
+
+  // Chrono global (concours blanc uniquement)
+  const [globalTimeLeft, setGlobalTimeLeft] = useState(GLOBAL_TIMER_SECONDS);
+  const globalTimerRef = useRef(null);
 
   const question = questions[index] ?? null;
   const cat      = question ? CATEGORIES[question.categorie] : null;
@@ -93,9 +104,33 @@ export default function QuizScreen({ navigation, route }) {
     [answered, question, bounceAnim, shakeAnim, explainAnim],
   );
 
-  // ─── Timer ────────────────────────────────────────────────────────────────────
+  // ─── Chrono global (concours blanc) ──────────────────────────────────────────
   useEffect(() => {
-    if (answered) return;
+    if (!isConcoursBlanc) return;
+    globalTimerRef.current = setInterval(() => {
+      setGlobalTimeLeft(t => {
+        if (t <= 1) { clearInterval(globalTimerRef.current); return 0; }
+        return t - 1;
+      });
+    }, 1000);
+    return () => clearInterval(globalTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!isConcoursBlanc || globalTimeLeft > 0) return;
+    navigation.replace('Resultats', { score, total: questions.length, details, mode: modeId, categorie });
+  }, [globalTimeLeft]);
+
+  // ─── Auto-avance (concours blanc) ─────────────────────────────────────────────
+  useEffect(() => {
+    if (!isConcoursBlanc || !answered) return;
+    const t = setTimeout(() => handleNext(), 1500);
+    return () => clearTimeout(t);
+  }, [answered]);
+
+  // ─── Timer par question ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (answered || isConcoursBlanc) return;
     timeLeftRef.current = TIMER_SECONDS;
     setTimeLeft(TIMER_SECONDS);
     explainAnim.setValue(0);
@@ -171,29 +206,42 @@ export default function QuizScreen({ navigation, route }) {
         </TouchableOpacity>
 
         <View style={styles.progressWrap}>
+          {isConcoursBlanc && (
+            <Text style={styles.concoursBadge}>CONCOURS BLANC</Text>
+          )}
           <ProgressBar current={index + (answered ? 1 : 0)} total={questions.length} />
           <Text style={styles.progressText}>
             {index + 1} / {questions.length}
           </Text>
         </View>
 
-        <View style={[styles.timerBadge, { borderColor: timerColor }]}>
-          <Text style={[styles.timerText, { color: timerColor }]}>{timeLeft}s</Text>
-        </View>
+        {isConcoursBlanc ? (
+          <View style={[styles.timerBadge, { borderColor: globalTimeLeft < 300 ? COLORS.danger : COLORS.success }]}>
+            <Text style={[styles.timerText, { color: globalTimeLeft < 300 ? COLORS.danger : COLORS.success }]}>
+              {formatGlobalTime(globalTimeLeft)}
+            </Text>
+          </View>
+        ) : (
+          <View style={[styles.timerBadge, { borderColor: timerColor }]}>
+            <Text style={[styles.timerText, { color: timerColor }]}>{timeLeft}s</Text>
+          </View>
+        )}
       </View>
 
-      {/* ── Barre timer ── */}
-      <View style={styles.timerTrack}>
-        <View
-          style={[
-            styles.timerFill,
-            {
-              width: `${(timeLeft / TIMER_SECONDS) * 100}%`,
-              backgroundColor: timerColor,
-            },
-          ]}
-        />
-      </View>
+      {/* ── Barre timer (masquée en concours blanc) ── */}
+      {!isConcoursBlanc && (
+        <View style={styles.timerTrack}>
+          <View
+            style={[
+              styles.timerFill,
+              {
+                width: `${(timeLeft / TIMER_SECONDS) * 100}%`,
+                backgroundColor: timerColor,
+              },
+            ]}
+          />
+        </View>
+      )}
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -222,9 +270,11 @@ export default function QuizScreen({ navigation, route }) {
         >
           <View style={styles.cardTop}>
             <CategoryBadge label={cat.label} emoji={cat.emoji} color={cat.color} />
-            <View style={styles.scorePill}>
-              <Text style={styles.scoreText}>✅ {score}/{questions.length}</Text>
-            </View>
+            {!isConcoursBlanc && (
+              <View style={styles.scorePill}>
+                <Text style={styles.scoreText}>✅ {score}/{questions.length}</Text>
+              </View>
+            )}
           </View>
 
           <Text style={styles.enonce}>{question.enonce}</Text>
@@ -273,8 +323,8 @@ export default function QuizScreen({ navigation, route }) {
           </View>
         )}
 
-        {/* ── Panneau explication ── */}
-        {answered && (
+        {/* ── Panneau explication (masqué en concours blanc) ── */}
+        {answered && !isConcoursBlanc && (
           <Animated.View
             style={[
               styles.explainPanel,
@@ -310,8 +360,8 @@ export default function QuizScreen({ navigation, route }) {
           </Animated.View>
         )}
 
-        {/* ── Bouton Suivant ── */}
-        {answered && (
+        {/* ── Bouton Suivant (masqué en concours blanc — auto-avance) ── */}
+        {answered && !isConcoursBlanc && (
           <TouchableOpacity
             onPress={handleNext}
             style={[
@@ -357,11 +407,14 @@ function PhraseWithBlank({ phrase, selectedWord, isCorrect, isWrong, correctWord
 // ─── VraiFauxButtons ──────────────────────────────────────────────────────────
 function VraiFauxButtons({ answered, selected, correctIndex, onPress }) {
   function btnStyle(idx) {
-    const base = [styles.vfBtn, idx === 0 ? styles.vfBtnVrai : styles.vfBtnFaux];
-    if (!answered) return base;
-    if (idx === correctIndex) return [...base, styles.vfCorrect];
-    if (idx === selected)     return [...base, styles.vfWrong];
-    return [...base, styles.vfDimmed];
+    if (!answered) return [styles.vfBtn, styles.vfBtnNeutral];
+    if (idx === correctIndex) return [styles.vfBtn, styles.vfCorrect];
+    if (idx === selected)     return [styles.vfBtn, styles.vfWrong];
+    return [styles.vfBtn, styles.vfDimmed];
+  }
+  function iconStyle(idx) {
+    if (!answered) return [styles.vfIcon, idx === 0 ? styles.vfIconVrai : styles.vfIconFaux];
+    return styles.vfIcon;
   }
   return (
     <View style={styles.vfRow}>
@@ -373,7 +426,7 @@ function VraiFauxButtons({ answered, selected, correctIndex, onPress }) {
           disabled={answered}
           activeOpacity={0.8}
         >
-          <Text style={styles.vfIcon}>{idx === 0 ? '✓' : '✗'}</Text>
+          <Text style={iconStyle(idx)}>{idx === 0 ? '✓' : '✗'}</Text>
           <Text style={styles.vfLabel}>{label}</Text>
         </TouchableOpacity>
       ))}
@@ -483,8 +536,9 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   quitText: { ...FONTS.sm, color: COLORS.textSecondary, fontWeight: '700' },
-  progressWrap: { flex: 1, gap: 4 },
-  progressText: { ...FONTS.xs, color: COLORS.textSecondary, textAlign: 'right' },
+  progressWrap:   { flex: 1, gap: 4 },
+  progressText:   { ...FONTS.xs, color: COLORS.textSecondary, textAlign: 'right' },
+  concoursBadge:  { ...FONTS.xs, fontWeight: '800', color: '#F0F4FF', letterSpacing: 1.2, marginBottom: 2 },
   timerBadge: {
     width: 52, height: 36,
     borderRadius: RADIUS.md,
@@ -541,13 +595,14 @@ const styles = StyleSheet.create({
     flex: 1, borderRadius: RADIUS.lg, borderWidth: 2,
     paddingVertical: 24, alignItems: 'center', gap: 6,
   },
-  vfBtnVrai: { backgroundColor: '#18C25A', borderColor: '#12A04A' },
-  vfBtnFaux: { backgroundColor: '#E53535', borderColor: '#C02828' },
-  vfCorrect: { backgroundColor: COLORS.success, borderColor: COLORS.success },
-  vfWrong:   { backgroundColor: COLORS.danger,  borderColor: COLORS.danger },
-  vfDimmed:  { opacity: 0.35 },
-  vfIcon:    { fontSize: 28, color: '#FFFFFF' },
-  vfLabel:   { ...FONTS.h3, color: '#FFFFFF', fontWeight: '900', letterSpacing: 1 },
+  vfBtnNeutral: { backgroundColor: COLORS.surface, borderColor: COLORS.border },
+  vfCorrect:    { backgroundColor: '#1A3828', borderColor: COLORS.success },
+  vfWrong:      { backgroundColor: '#3A1820', borderColor: COLORS.danger },
+  vfDimmed:     { backgroundColor: COLORS.surface, borderColor: COLORS.border, opacity: 0.35 },
+  vfIcon:       { fontSize: 28, color: '#FFFFFF' },
+  vfIconVrai:   { color: COLORS.success },
+  vfIconFaux:   { color: COLORS.danger },
+  vfLabel:      { ...FONTS.h3, color: COLORS.text, fontWeight: '900', letterSpacing: 1 },
 
   // Word chips (compléter)
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm, marginBottom: SPACING.lg },
@@ -575,7 +630,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     gap: SPACING.sm,
   },
-  optDefault: { backgroundColor: COLORS.white,   borderColor: COLORS.border },
+  optDefault: { backgroundColor: COLORS.surface,  borderColor: COLORS.border },
   optCorrect: { backgroundColor: '#1A3828',       borderColor: COLORS.success },
   optWrong:   { backgroundColor: '#3A1820',       borderColor: COLORS.danger },
   optDimmed:  { backgroundColor: COLORS.surface,  borderColor: COLORS.border, opacity: 0.5 },

@@ -1,0 +1,291 @@
+export const QUESTIONS_PSYCHO_VERBAL = [
+  // --- SYNONYMES ---
+  {
+    id: 'PV001',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot a le même sens que INTRÉPIDE ?',
+    options: ['Courageux', 'Maladroit', 'Prudent', 'Timide'],
+    correctIndex: 0,
+    explication: 'Intrépide signifie qui ne ressent pas la peur, courageux face au danger.',
+  },
+  {
+    id: 'PV002',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot est synonyme de PROMULGUER (une loi) ?',
+    options: ['Abroger', 'Publier officiellement', 'Contester', 'Suspendre'],
+    correctIndex: 1,
+    explication: 'Promulguer une loi, c\'est la rendre officielle en la publiant au Journal officiel.',
+  },
+  {
+    id: 'PV003',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot a le même sens que RÉCIDIVER ?',
+    options: ['Se repentir', 'Commettre à nouveau la même infraction', 'Dénoncer un crime', 'Fuir la justice'],
+    correctIndex: 1,
+    explication: 'Récidiver, c\'est commettre une nouvelle infraction après avoir déjà été condamné.',
+  },
+  {
+    id: 'PV004',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot est synonyme de VÉNAL ?',
+    options: ['Loyal', 'Corruptible', 'Généreux', 'Impartial'],
+    correctIndex: 1,
+    explication: 'Vénal qualifie quelqu\'un qui se laisse corrompre par l\'argent, qui agit pour un gain personnel.',
+  },
+
+  // --- ANTONYMES ---
+  {
+    id: 'PV005',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel est le contraire de CLÉMENT ?',
+    options: ['Sévère', 'Indulgent', 'Bienveillant', 'Doux'],
+    correctIndex: 0,
+    explication: 'Clément signifie indulgent et doux. Son contraire est sévère, qui punit sans pitié.',
+  },
+  {
+    id: 'PV006',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel est l\'antonyme de LICITE ?',
+    options: ['Légal', 'Autorisé', 'Illicite', 'Réglementaire'],
+    correctIndex: 2,
+    explication: 'Licite signifie autorisé par la loi. Son antonyme est illicite, c\'est-à-dire interdit.',
+  },
+  {
+    id: 'PV007',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel est le contraire de PRÉMÉDITER ?',
+    options: ['Planifier', 'Agir spontanément', 'Anticiper', 'Organiser'],
+    correctIndex: 1,
+    explication: 'Préméditer signifie décider à l\'avance. Le contraire est agir spontanément, sans réflexion préalable.',
+  },
+  {
+    id: 'PV008',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel est l\'antonyme de PARTIEL ?',
+    options: ['Incomplet', 'Fragmenté', 'Intégral', 'Restreint'],
+    correctIndex: 2,
+    explication: 'Partiel désigne ce qui n\'est qu\'une partie d\'un tout. Son antonyme est intégral, qui désigne la totalité.',
+  },
+
+  // --- ANALOGIES VERBALES ---
+  {
+    id: 'PV009',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'CHALEUR est à ÉTÉ ce que FROID est à ___.',
+    options: ['Printemps', 'Hiver', 'Automne', 'Soleil'],
+    correctIndex: 1,
+    explication: 'La chaleur caractérise l\'été ; le froid caractérise l\'hiver. La relation est saison/température.',
+  },
+  {
+    id: 'PV010',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'TRIBUNAL est à JUGE ce que COMMISSARIAT est à ___.',
+    options: ['Avocat', 'Greffier', 'Policier', 'Procureur'],
+    correctIndex: 2,
+    explication: 'Le juge exerce au tribunal ; le policier exerce au commissariat. Relation lieu/professionnel.',
+  },
+  {
+    id: 'PV011',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'DÉLIT est à CORRECTIONNELLE ce que CRIME est à ___.',
+    options: ['Tribunal de police', 'Cour d\'assises', 'Conseil d\'État', 'Cour des comptes'],
+    correctIndex: 1,
+    explication: 'Le délit est jugé par le tribunal correctionnel ; le crime est jugé par la cour d\'assises.',
+  },
+  {
+    id: 'PV012',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'MANUSCRIT est à ÉCRIRE ce que PHOTOGRAPHIE est à ___.',
+    options: ['Dessiner', 'Peindre', 'Photographier', 'Imprimer'],
+    correctIndex: 2,
+    explication: 'Un manuscrit résulte de l\'action d\'écrire ; une photographie résulte de l\'action de photographier.',
+  },
+
+  // --- INTRUS LEXICAUX ---
+  {
+    id: 'PV013',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot n\'appartient pas à la série : DÉTENTION, GARDE À VUE, COMPARUTION, INCARCÉRATION ?',
+    options: ['Détention', 'Garde à vue', 'Comparution', 'Incarcération'],
+    correctIndex: 2,
+    explication: 'Détention, garde à vue et incarcération désignent des privations de liberté. Comparution est le fait de se présenter devant un tribunal, sans privation de liberté.',
+  },
+  {
+    id: 'PV014',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot n\'appartient pas à la série : DÉPOSER, TÉMOIGNER, AUDITIONNER, CONDAMNER ?',
+    options: ['Déposer', 'Témoigner', 'Auditionner', 'Condamner'],
+    correctIndex: 3,
+    explication: 'Déposer, témoigner et auditionner sont des actes liés à la collecte de témoignages. Condamner est un acte de jugement, catégorie différente.',
+  },
+  {
+    id: 'PV015',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot n\'appartient pas à la série : FLAGRANT, MANIFESTE, ÉVIDENT, HYPOTHÉTIQUE ?',
+    options: ['Flagrant', 'Manifeste', 'Évident', 'Hypothétique'],
+    correctIndex: 3,
+    explication: 'Flagrant, manifeste et évident qualifient ce qui est indiscutablement visible. Hypothétique qualifie ce qui est supposé, non prouvé — sens opposé.',
+  },
+
+  // --- DÉFINITIONS ---
+  {
+    id: 'PV016',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot correspond à cette définition : "Action de priver quelqu\'un de sa liberté de manière légale" ?',
+    options: ['Perquisition', 'Interpellation', 'Arrestation', 'Citation'],
+    correctIndex: 2,
+    explication: 'L\'arrestation est l\'acte par lequel une autorité légale prive quelqu\'un de sa liberté.',
+  },
+  {
+    id: 'PV017',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot correspond à cette définition : "Fouille d\'un lieu par les forces de l\'ordre avec autorisation judiciaire" ?',
+    options: ['Saisie', 'Perquisition', 'Réquisition', 'Injonction'],
+    correctIndex: 1,
+    explication: 'La perquisition est la fouille d\'un domicile ou d\'un lieu par les forces de l\'ordre, autorisée par un magistrat.',
+  },
+  {
+    id: 'PV018',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot correspond à cette définition : "Acte par lequel une victime informe les autorités d\'une infraction" ?',
+    options: ['Plainte', 'Aveu', 'Réquisitoire', 'Ordonnance'],
+    correctIndex: 0,
+    explication: 'La plainte est la démarche par laquelle une victime porte une infraction à la connaissance des autorités.',
+  },
+
+  // --- PARONYMES / CONFUSIONS ---
+  {
+    id: 'PV019',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quelle est la différence entre COLLISION et COLLUSION ?',
+    options: [
+      'Ce sont deux synonymes désignant un accord secret',
+      'Collision = choc entre deux objets ; collusion = accord secret entre parties',
+      'Collision = accord secret ; collusion = choc entre deux véhicules',
+      'Ces deux mots désignent des accidents de la route',
+    ],
+    correctIndex: 1,
+    explication: 'Une collision est un choc physique (ex : collision entre deux voitures). Une collusion est un accord secret et frauduleux entre personnes.',
+  },
+  {
+    id: 'PV020',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Dans quelle phrase le mot EFFRACTION est-il utilisé correctement ?',
+    options: [
+      'Il a commis une effraction en entrant sans briser ni forcer quoi que ce soit',
+      'L\'effraction désigne le bris ou forçage d\'une serrure ou d\'une clôture',
+      'L\'effraction est synonyme d\'évasion',
+      'Une effraction ne peut avoir lieu que la nuit',
+    ],
+    correctIndex: 1,
+    explication: 'L\'effraction est le fait de briser, forcer ou fracturer une clôture, une serrure ou tout dispositif de fermeture pour s\'introduire quelque part.',
+  },
+  {
+    id: 'PV021',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quelle est la différence entre INFRACTION et CONTRAVENTION ?',
+    options: [
+      'Ce sont des synonymes exacts',
+      'Infraction est le terme général ; contravention est la catégorie la moins grave',
+      'Contravention est plus grave qu\'un crime',
+      'Infraction ne s\'applique qu\'aux mineurs',
+    ],
+    correctIndex: 1,
+    explication: 'Infraction est le terme générique. Il se divise en trois catégories : contravention (la moins grave), délit, et crime (la plus grave).',
+  },
+
+  // --- COMPRÉHENSION DE TEXTE ---
+  {
+    id: 'PV022',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Lisez ce texte : "Le gardien de la paix doit faire preuve de discernement dans l\'exercice de ses fonctions. Il est amené à gérer des situations complexes où la réactivité et la retenue doivent coexister."\n\nQuel mot résume le mieux la qualité principale évoquée dans ce texte ?',
+    options: ['La force', 'Le discernement', 'La vitesse', 'L\'autorité'],
+    correctIndex: 1,
+    explication: 'Le texte insiste sur le discernement (capacité à juger avec justesse) comme qualité principale, alliant réactivité et retenue.',
+  },
+  {
+    id: 'PV023',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Lisez ce texte : "La déontologie policière impose à chaque fonctionnaire de respecter la dignité des personnes, quelles que soient les circonstances. Tout abus de pouvoir est susceptible d\'engager la responsabilité disciplinaire, voire pénale, de son auteur."\n\nQue risque un policier qui abuse de son pouvoir ?',
+    options: [
+      'Une simple mise en garde verbale',
+      'Des sanctions disciplinaires ou pénales',
+      'Un changement de poste uniquement',
+      'Aucune sanction, il est protégé par son statut',
+    ],
+    correctIndex: 1,
+    explication: 'Le texte précise qu\'un abus de pouvoir peut engager la responsabilité disciplinaire et/ou pénale du fonctionnaire.',
+  },
+  {
+    id: 'PV024',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Lisez ce texte : "La hiérarchie des normes impose que toute règle de droit inférieure soit conforme aux normes supérieures. La Constitution se situe au sommet de cette hiérarchie en France."\n\nQuelle est la norme supérieure en France selon ce texte ?',
+    options: ['Le Code civil', 'La loi ordinaire', 'La Constitution', 'Le règlement préfectoral'],
+    correctIndex: 2,
+    explication: 'Le texte indique explicitement que la Constitution se situe au sommet de la hiérarchie des normes en France.',
+  },
+
+  // --- FAMILLE DE MOTS / PRÉFIXES / SUFFIXES ---
+  {
+    id: 'PV025',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel préfixe commun peut compléter ces mots : ___légal, ___licite, ___mortel ?',
+    options: ['Anti-', 'Il-', 'In-', 'Dé-'],
+    correctIndex: 1,
+    explication: 'Illégal, illicite, immortel (il- devant l, im- devant m) — ces préfixes négatifs partagent la racine latine "in-" qui s\'adapte selon la lettre suivante.',
+  },
+  {
+    id: 'PV026',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel est le nom commun dérivé du verbe TÉMOIGNER ?',
+    options: ['Témoignage', 'Témoin', 'Témoignant', 'Témoigné'],
+    correctIndex: 0,
+    explication: 'Du verbe témoigner, on dérive le nom témoignage, qui désigne la déclaration faite par un témoin.',
+  },
+  {
+    id: 'PV027',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot de la famille de JUGER désigne la décision rendue par un tribunal ?',
+    options: ['Jugement', 'Jugeote', 'Jugeable', 'Judicieux'],
+    correctIndex: 0,
+    explication: 'Jugement est le substantif direct de juger ; il désigne la décision rendue par une juridiction.',
+  },
+
+  // --- NIVEAU DE LANGUE / REGISTRE ---
+  {
+    id: 'PV028',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quelle formulation appartient au registre soutenu, adapté à un rapport de police officiel ?',
+    options: [
+      '"Le gars a pris la fuite en courant vite."',
+      '"Le suspect a pris la fuite précipitamment."',
+      '"Il s\'est cassé en vitesse."',
+      '"Le type a déguerpi."',
+    ],
+    correctIndex: 1,
+    explication: '"Le suspect a pris la fuite précipitamment" utilise un vocabulaire précis et neutre, adapté à un écrit administratif ou judiciaire.',
+  },
+  {
+    id: 'PV029',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Dans un procès-verbal, quelle tournure est correcte ?',
+    options: [
+      '"Je certifie que c\'est vrai."',
+      '"Je soussigné, certifie que les faits relatés ci-dessus sont exacts."',
+      '"Tout ce que j\'ai écrit est bien réel."',
+      '"Voilà ce qui s\'est vraiment passé."',
+    ],
+    correctIndex: 1,
+    explication: '"Je soussigné, certifie que les faits relatés ci-dessus sont exacts" est la formule consacrée dans les écrits officiels et judiciaires.',
+  },
+
+  // --- QUESTION MIXTE VOCABULAIRE JURIDIQUE ---
+  {
+    id: 'PV030',
+    categorie: 'PSYCHO_VERBAL',
+    enonce: 'Quel mot désigne la personne contre laquelle une plainte est déposée ?',
+    options: ['Le plaignant', 'Le mis en cause', 'Le témoin', 'Le greffier'],
+    correctIndex: 1,
+    explication: 'Le mis en cause est la personne dont la responsabilité est recherchée dans une affaire. Le plaignant est celui qui dépose la plainte.',
+  },
+];

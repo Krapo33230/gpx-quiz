@@ -4,12 +4,15 @@ import {
   TextInput, KeyboardAvoidingView, Platform, ScrollView, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SPACING } from '../theme/colors';
 import { completeOnboarding, saveObjectif } from '../utils/storage';
+import { requestAndScheduleDailyNotif } from '../utils/notifications';
+import { sendLeadToSheets } from '../utils/leads';
 
 import { BG } from './onboarding/theme';
 import { styles } from './onboarding/styles';
-import { Cta, MascotBubble, OptionRow, TypewriterChat, IntroChat, LoadingStep } from './onboarding/components';
+import { Cta, MascotBubble, OptionRow, TypewriterChat, IntroChat, LoadingStep, NotifStep9 } from './onboarding/components';
 import {
   DATES_CONCOURS, DATE_REACTIONS,
   NIVEAUX, NIVEAU_REACTIONS,
@@ -19,17 +22,22 @@ import {
 
 export default function OnboardingScreen({ navigation, route }) {
   const returning = route?.params?.returning ?? false;
-  const [step,         setStep]         = useState(returning ? 10 : 0);
+  const [step,         setStep]         = useState(9); // DEV — remettre: returning ? 10 : 0
   const [showCta,      setShowCta]      = useState(false);
   const [introIndex,   setIntroIndex]   = useState(0);
   const [name,         setName]         = useState('');
   const [age,          setAge]          = useState('');
+  const [email,        setEmail]        = useState('');
+  const [gender,       setGender]       = useState(null);
+  const matricule = useRef(`CGP-${Math.floor(10000 + Math.random() * 90000)}`).current;
+  const [step8Errors,  setStep8Errors]  = useState(false);
+  const shakeStep8 = useRef(new Animated.Value(0)).current;
   const [dateConcours, setDateConcours] = useState(null);
   const [niveau,       setNiveau]       = useState(null);
   const [objectif,     setObjectif]     = useState(null);
+  const [notifHour,    setNotifHour]    = useState(19);
 
-  const fadeAnim    = useRef(new Animated.Value(1)).current;
-  const loadingAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   function animStep(nextStep) {
     Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }).start(() => {
@@ -44,28 +52,51 @@ export default function OnboardingScreen({ navigation, route }) {
 
   useEffect(() => {
     if (step !== 7) return;
-    loadingAnim.setValue(0);
-    Animated.timing(loadingAnim, { toValue: 1, duration: 2000, useNativeDriver: false }).start();
     const t = setTimeout(() => animStep(8), 2500);
     return () => clearTimeout(t);
   }, [step]);
 
-  async function handleFinish() {
-    await completeOnboarding(name.trim() || 'Candidat', age.trim());
-    if (objectif) await saveObjectif(objectif);
-    navigation.replace('AutoEvalIntro', { fromOnboarding: true });
+  function handleStep8Next() {
+    if (!name.trim() || !gender || !email.trim()) {
+      setStep8Errors(true);
+      Animated.sequence([
+        Animated.timing(shakeStep8, { toValue: 12,  duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeStep8, { toValue: -12, duration: 50, useNativeDriver: true }),
+        Animated.timing(shakeStep8, { toValue: 8,   duration: 40, useNativeDriver: true }),
+        Animated.timing(shakeStep8, { toValue: -8,  duration: 40, useNativeDriver: true }),
+        Animated.timing(shakeStep8, { toValue: 0,   duration: 40, useNativeDriver: true }),
+      ]).start();
+      return;
+    }
+    animStep(9);
   }
 
-  function handleNotifYes() {
-    Alert.alert(
-      'Autoriser les notifications',
-      "ConcoursPolice souhaite t'envoyer des rappels d'entraînement.",
-      [
-        { text: 'Refuser',   style: 'cancel', onPress: () => animStep(10) },
-        { text: 'Autoriser', onPress: () => animStep(10) },
-      ],
-    );
+  async function handleFinish() {
+    const finalName = name.trim() || 'Candidat';
+    await completeOnboarding(finalName, age.trim(), email.trim(), matricule, gender);
+    if (objectif) await saveObjectif(objectif);
+    sendLeadToSheets({ matricule, name: finalName, gender, age: age.trim(), email: email.trim() });
+    navigation.reset({ index: 0, routes: [{ name: 'AutoEvalIntro', params: { fromOnboarding: true } }] });
   }
+
+  async function handleNotifYes() {
+    try {
+      const granted = await requestAndScheduleDailyNotif(notifHour);
+      if (!granted) {
+        Alert.alert(
+          'Notifications refusées',
+          'Tu pourras les activer plus tard dans les paramètres de ton téléphone.',
+          [{ text: 'OK', onPress: () => animStep(10) }],
+        );
+        return;
+      }
+    } catch (_) {
+      // expo-notifications non disponible en Expo Go — on passe quand même
+    }
+    animStep(10);
+  }
+
+  const isTalkingStep = step === 0 || step === 2 || step === 4 || step === 6;
 
   const progress = step === 0
     ? INTRO_PROGRESS[Math.min(introIndex, INTRO_PROGRESS.length - 1)]
@@ -74,6 +105,13 @@ export default function OnboardingScreen({ navigation, route }) {
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.container}>
+        {isTalkingStep && (
+          <LinearGradient
+            colors={['transparent', 'rgba(26,74,255,0.18)', 'rgba(26,74,255,0.32)']}
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '45%' }}
+            pointerEvents="none"
+          />
+        )}
         <SafeAreaView style={{ flex: 1 }}>
 
           {step !== 7 && (
@@ -82,7 +120,6 @@ export default function OnboardingScreen({ navigation, route }) {
                 onPress={() => {
                   if (step > 0) { animStep(step - 1); }
                   else if (introIndex > 0) { setShowCta(false); setIntroIndex(i => i - 1); }
-                  else { navigation.goBack(); }
                 }}
                 style={styles.backBtn}
               >
@@ -169,7 +206,7 @@ export default function OnboardingScreen({ navigation, route }) {
               />
             )}
 
-            {step === 7 && <LoadingStep loadingAnim={loadingAnim} />}
+            {step === 7 && <LoadingStep />}
 
             {step === 8 && (
               <ScrollView
@@ -179,76 +216,111 @@ export default function OnboardingScreen({ navigation, route }) {
                 keyboardShouldPersistTaps="handled"
               >
                 <View style={styles.sectionBadgeRow}>
-                  <Text style={styles.sectionBadge}>CRÉER TON PROFIL</Text>
+                  <Text style={styles.sectionBadge}>FICHE MATRICULE</Text>
                   <Text style={styles.sectionBadgeStep}>1 / 2</Text>
                 </View>
-                <Text style={styles.profileTitle}>Comment tu t'appelles ?</Text>
-                <TextInput
-                  style={styles.profileInput}
-                  placeholder="Prénom"
-                  placeholderTextColor="#4A6A8A"
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                />
-                <TextInput
-                  style={[styles.profileInput, { marginTop: SPACING.sm }]}
-                  placeholder="Âge (facultatif)"
-                  placeholderTextColor="#4A6A8A"
-                  value={age}
-                  onChangeText={t => setAge(t.replace(/[^0-9]/g, ''))}
-                  keyboardType="number-pad"
-                  returnKeyType="done"
-                  maxLength={2}
-                />
-                <View style={styles.orRow}>
-                  <View style={styles.orLine} />
-                  <Text style={styles.orText}>ou</Text>
-                  <View style={styles.orLine} />
-                </View>
-                <TouchableOpacity style={styles.emailBtn} activeOpacity={0.8}>
-                  <Text style={styles.emailBtnText}>Se connecter avec un compte mail</Text>
-                </TouchableOpacity>
+                <Text style={styles.profileTitle}>Identification{'\n'}de la Recrue</Text>
+                <Text style={styles.profileSubtitle}>
+                  Renseigne tes informations pour personnaliser ta préparation.
+                </Text>
+
+                <Animated.View style={{ transform: [{ translateX: shakeStep8 }] }}>
+
+                  <View style={styles.fieldGroup}>
+                    <Text style={styles.fieldLabel}>N° MATRICULE :</Text>
+                    <Text style={styles.fieldMatricule}>{matricule}</Text>
+                  </View>
+
+                  <View style={styles.fieldGroup}>
+                    <Text style={[styles.fieldLabel, step8Errors && !name.trim() && { color: '#EF4135' }]}>
+                      PRÉNOM :{step8Errors && !name.trim() ? '  champ requis' : ''}
+                    </Text>
+                    <TextInput
+                      style={[styles.fieldInput, step8Errors && !name.trim() && { borderBottomColor: '#EF4135' }]}
+                      placeholder="ex : Thomas"
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      value={name}
+                      onChangeText={v => { setName(v); if (v.trim()) setStep8Errors(false); }}
+                      autoCapitalize="words"
+                      autoCorrect={false}
+                      returnKeyType="next"
+                    />
+                    <View style={styles.genderRow}>
+                      {[
+                        { id: 'M', symbol: '♂', label: 'Homme', color: '#1A4AFF', bg: 'rgba(26,74,255,0.15)', text: '#A0B8FF' },
+                        { id: 'F', symbol: '♀', label: 'Femme', color: '#FF4A8D', bg: 'rgba(255,74,141,0.15)', text: '#FFB0D0' },
+                      ].map(g => (
+                        <TouchableOpacity
+                          key={g.id}
+                          style={[
+                            styles.genderBtn,
+                            gender === g.id && { borderColor: g.color, backgroundColor: g.bg },
+                            step8Errors && !gender && { borderColor: '#EF4135' },
+                          ]}
+                          onPress={() => { setGender(g.id); setStep8Errors(false); }}
+                          activeOpacity={0.8}
+                        >
+                          <Text style={[styles.genderSymbol, gender === g.id && { color: g.color }]}>{g.symbol}</Text>
+                          <Text style={[styles.genderLabel, gender === g.id && { color: g.text }]}>{g.label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+
+                  <View style={styles.fieldGroup}>
+                    <Text style={styles.fieldLabel}>ÂGE :</Text>
+                    <TextInput
+                      style={styles.fieldInput}
+                      placeholder="ex : 24  (facultatif)"
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      value={age}
+                      onChangeText={t => setAge(t.replace(/[^0-9]/g, ''))}
+                      keyboardType="number-pad"
+                      returnKeyType="done"
+                      maxLength={2}
+                    />
+                  </View>
+
+                  <View style={styles.fieldGroup}>
+                    <Text style={[styles.fieldLabel, step8Errors && !email.trim() && { color: '#EF4135' }]}>
+                      ADRESSE MAIL :{step8Errors && !email.trim() ? '  champ requis' : ''}
+                    </Text>
+                    <TextInput
+                      style={[styles.fieldInput, step8Errors && !email.trim() && { borderBottomColor: '#EF4135' }]}
+                      placeholder="ex : thomas@mail.com"
+                      placeholderTextColor="rgba(255,255,255,0.2)"
+                      value={email}
+                      onChangeText={v => { setEmail(v); if (v.trim()) setStep8Errors(false); }}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      returnKeyType="done"
+                    />
+                  </View>
+
+                </Animated.View>
               </ScrollView>
             )}
 
-            {step === 9 && (
-              <View style={styles.centerFull}>
-                <View style={styles.sectionBadgeRow}>
-                  <Text style={styles.sectionBadge}>CRÉER TON PROFIL</Text>
-                  <Text style={styles.sectionBadgeStep}>2 / 2</Text>
-                </View>
-                <Text style={styles.notifTitle}>Rappels d'entraînement</Text>
-                <Text style={styles.notifSub}>
-                  On te rappelle de t'entraîner chaque jour pour maintenir ta série.
-                </Text>
-                <TouchableOpacity style={styles.notifYesBtn} onPress={handleNotifYes} activeOpacity={0.85}>
-                  <Text style={styles.notifYesBtnText}>Oui, active les rappels !</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.notifNoBtn} onPress={() => animStep(10)} activeOpacity={0.8}>
-                  <Text style={styles.notifNoBtnText}>Non merci</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            {step === 9 && <NotifStep9 hour={notifHour} onHourChange={setNotifHour} />}
 
             {step === 10 && (
-              <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.sellScroll} showsVerticalScrollIndicator={false}>
+              <View style={{ flex: 1, paddingHorizontal: 24, paddingTop: 32, justifyContent: 'center' }}>
                 <Text style={styles.sellTitle}>
-                  {name ? `${name}, tu es` : 'Tu es'} à la bonne place. 💪
+                  {name ? `${name}, tu es` : 'Tu es'}{'\n'}à la bonne place. 💪
                 </Text>
                 <Text style={styles.sellSub}>
-                  ConcoursPolice prépare les candidats au concours Gardien de la Paix de A à Z.
+                  Tout ce qu'il faut pour réussir le concours Gardien de la Paix.
                 </Text>
+
                 <View style={styles.statsChocRow}>
                   <View style={styles.statsChocItem}>
-                    <Text style={styles.statsChocNum}>200+</Text>
+                    <Text style={styles.statsChocNum}>1100+</Text>
                     <Text style={styles.statsChocLabel}>questions</Text>
                   </View>
                   <View style={styles.statsChocSep} />
                   <View style={styles.statsChocItem}>
-                    <Text style={styles.statsChocNum}>6</Text>
+                    <Text style={styles.statsChocNum}>11</Text>
                     <Text style={styles.statsChocLabel}>matières</Text>
                   </View>
                   <View style={styles.statsChocSep} />
@@ -257,23 +329,33 @@ export default function OnboardingScreen({ navigation, route }) {
                     <Text style={styles.statsChocLabel}>gratuit</Text>
                   </View>
                 </View>
-                {[
-                  { icon: '⚖️', title: 'Droit & Procédure',      sub: 'Droit pénal, institutions, procédure pénale' },
-                  { icon: '🌍', title: 'Culture Générale',        sub: 'Histoire, géographie, actualités, citoyenneté' },
-                  { icon: '🧠', title: 'Logique & Français',      sub: 'Raisonnement, expression écrite, vocabulaire' },
-                  { icon: '🚔', title: 'Sécurité & Police',       sub: 'Organisation police, procédures, hiérarchie' },
-                  { icon: '✅', title: 'Vrai / Faux & Exercices', sub: "Plusieurs types d'exercices comme au concours" },
-                  { icon: '📊', title: 'Suivi de progression',    sub: 'Statistiques, streak, XP et grades' },
-                ].map(f => (
-                  <View key={f.title} style={styles.featureRow}>
-                    <View style={styles.featureIcon}><Text style={{ fontSize: 24 }}>{f.icon}</Text></View>
-                    <View style={styles.featureText}>
-                      <Text style={styles.featureTitle}>{f.title}</Text>
-                      <Text style={styles.featureSub}>{f.sub}</Text>
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.catalogScroll}
+                  style={{ marginHorizontal: -24 }}
+                >
+                  {[
+                    { icon: '⚖️', title: 'Droit',      color: '#1A3F7A' },
+                    { icon: '🌍', title: 'Culture',     color: '#2B7A5B' },
+                    { icon: '🧠', title: 'Logique',     color: '#7A2B6A' },
+                    { icon: '📝', title: 'Français',    color: '#1A6A7A' },
+                    { icon: '🚔', title: 'Sécurité',    color: '#7A4B1A' },
+                    { icon: '🌐', title: 'Monde',       color: '#1A6A3A' },
+                    { icon: '🔢', title: 'Calcul',      color: '#4A1A7A' },
+                    { icon: '💬', title: 'Verbal',      color: '#1A5A4A' },
+                    { icon: '🔷', title: 'Abstrait',    color: '#7A3A1A' },
+                    { icon: '✅', title: 'Exercices',   color: '#3A5A1A' },
+                    { icon: '🇬🇧', title: 'Anglais',   color: '#1A2A7A' },
+                  ].map((c, i) => (
+                    <View key={i} style={[styles.catalogCard, { borderColor: c.color + 'AA' }]}>
+                      <Text style={styles.catalogIcon}>{c.icon}</Text>
+                      <Text style={styles.catalogTitle}>{c.title}</Text>
                     </View>
-                  </View>
-                ))}
-              </ScrollView>
+                  ))}
+                </ScrollView>
+              </View>
             )}
 
           </Animated.View>
@@ -300,7 +382,15 @@ export default function OnboardingScreen({ navigation, route }) {
               {step === 4  && <Cta label="CONTINUER"    onPress={() => animStep(5)}  disabled={!showCta} />}
               {step === 5  && <Cta label="C'EST PARTI !" onPress={() => animStep(6)} disabled={!objectif} />}
               {step === 6  && <Cta label="CONTINUER"    onPress={() => animStep(7)}  disabled={!showCta} />}
-              {step === 8  && <Cta label="CONTINUER"    onPress={() => animStep(9)}  disabled={!name.trim()} />}
+              {step === 8  && <Cta label="CONTINUER"   onPress={handleStep8Next} />}
+              {step === 9  && (
+                <View style={{ width: '100%', gap: 4 }}>
+                  <Cta label="ACTIVER LES RAPPELS →" onPress={handleNotifYes} />
+                  <TouchableOpacity style={{ paddingVertical: 14, alignItems: 'center' }} onPress={() => animStep(10)} activeOpacity={0.7}>
+                    <Text style={{ fontSize: 14, color: 'rgba(255,255,255,0.25)', fontWeight: '600' }}>Passer sans rappels</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
               {step === 10 && <Cta label="COMMENCER →"  onPress={handleFinish} />}
             </View>
           )}
